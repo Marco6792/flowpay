@@ -1,0 +1,1038 @@
+{
+	"info": {
+		"_postman_id": "0a9a86fb-a689-4c44-bd4a-b4b90165c4ef",
+		"name": "FlowPay OAuth2 & Consent Management",
+		"description": "Complete OAuth2 consent flow implementation with MTN Mobile Money API including all test scenarios",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "45308707",
+		"_collection_link": "https://marco-6834374.postman.co/workspace/MArco's-Workspace~738b0c66-3f7a-46d2-8144-fcce11990f67/collection/45308707-0a9a86fb-a689-4c44-bd4a-b4b90165c4ef?action=share&source=collection_link&creator=45308707"
+	},
+	"item": [
+		{
+			"name": "02. 🤝 Consent Authorization Flow",
+			"item": [
+				{
+					"name": "Poll for Token - Check Consent Status",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.test('OAuth2 token received', function () {",
+									"        pm.expect(response.success).to.be.true;",
+									"        pm.expect(response.data.accessToken).to.exist;",
+									"        pm.collectionVariables.set('oauth2_access_token', response.data.accessToken);",
+									"        pm.collectionVariables.set('oauth2_refresh_token', response.data.refreshToken);",
+									"    });",
+									"} else if (pm.response.code === 202) {",
+									"    pm.test('Consent still pending', function () {",
+									"        pm.expect(pm.response.json().error).to.include('pending');",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent/token/{{auth_req_id}}?provider=MTN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent",
+								"token",
+								"{{auth_req_id}}"
+							],
+							"query": [
+								{
+									"key": "provider",
+									"value": "MTN"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Info with OAuth2 Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('User info retrieved successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.userInfo).to.exist;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accessToken\": \"{{oauth2_access_token}}\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent/userinfo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent",
+								"userinfo"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh OAuth2 Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Token refreshed successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"    pm.expect(response.data.accessToken).to.exist;",
+									"    pm.collectionVariables.set('oauth2_access_token', response.data.accessToken);",
+									"    if (response.data.refreshToken) {",
+									"        pm.collectionVariables.set('oauth2_refresh_token', response.data.refreshToken);",
+									"    }",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"refreshToken\": \"{{oauth2_refresh_token}}\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_prefix}}/consent/refresh",
+							"host": [
+								"{{base_url}}{{api_prefix}}"
+							],
+							"path": [
+								"consent",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke Consent",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test('Consent revoked successfully', function () {",
+									"    pm.response.to.have.status(200);",
+									"    const response = pm.response.json();",
+									"    pm.expect(response.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accessToken\": \"{{oauth2_access_token}}\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent/revoke",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent",
+								"revoke"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "03. 📋 Test Scenarios (MTN Sandbox)",
+			"item": [
+				{
+					"name": "✅ Success - All Info Scope",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"56733123453\",\n    \"scope\": \"all_info\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test successful consent with all_info scope"
+					},
+					"response": []
+				},
+				{
+					"name": "❌ Account Holder Not Found",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123450\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test account holder not found scenario"
+					},
+					"response": []
+				},
+				{
+					"name": "❌ Consent Rejected",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123451\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test consent rejected by user"
+					},
+					"response": []
+				},
+				{
+					"name": "⏳ Consent Pending",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123452\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test consent pending approval"
+					},
+					"response": []
+				},
+				{
+					"name": "⏱️ Consent Expired",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123453\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test expired consent"
+					},
+					"response": []
+				},
+				{
+					"name": "🔄 Expired Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123454\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test expired refresh token"
+					},
+					"response": []
+				},
+				{
+					"name": "🚫 Consent Revoked",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123455\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test revoked consent"
+					},
+					"response": []
+				},
+				{
+					"name": "📝 Deleted Scope",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123456\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test deleted scope scenario"
+					},
+					"response": []
+				},
+				{
+					"name": "♻️ Already Used",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123457\",\n    \"scope\": \"profile\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test already used consent"
+					},
+					"response": []
+				},
+				{
+					"name": "💸 No Funds",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123458\",\n    \"scope\": \"profile transfer\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test insufficient funds scenario"
+					},
+					"response": []
+				},
+				{
+					"name": "👤 Payee Not Found",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123459\",\n    \"scope\": \"profile transfer\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test payee not found"
+					},
+					"response": []
+				},
+				{
+					"name": "⚠️ Consent Mismatch",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123460\",\n    \"scope\": \"profile transfer\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test consent mismatch"
+					},
+					"response": []
+				},
+				{
+					"name": "🚨 Payer Limit Reached",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123461\",\n    \"scope\": \"profile transfer balance\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test payer limit reached"
+					},
+					"response": []
+				},
+				{
+					"name": "🚫 Payee Not Allowed",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"46733123462\",\n    \"scope\": \"profile transfer balance\",\n    \"accessType\": \"offline\",\n    \"businessId\": \"FlowPay_Test\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent"
+							]
+						},
+						"description": "Test payee not allowed to receive"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "04. 👤 User Information APIs",
+			"item": [
+				{
+					"name": "Get Basic User Info (without consent)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/user/basic/{{test_customer_id}}?provider=MTN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"user",
+								"basic",
+								"{{test_customer_id}}"
+							],
+							"query": [
+								{
+									"key": "provider",
+									"value": "MTN"
+								}
+							]
+						},
+						"description": "Get basic user information without requiring consent"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Info with OAuth2 Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"accessToken\": \"{{oauth2_access_token}}\",\n    \"provider\": \"MTN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/consent/userinfo",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"consent",
+								"userinfo"
+							]
+						},
+						"description": "Get detailed user information using OAuth2 token"
+					},
+					"response": []
+				},
+				{
+					"name": "Validate Account Holder Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/user/validate/{{test_customer_id}}?provider=MTN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"user",
+								"validate",
+								"{{test_customer_id}}"
+							],
+							"query": [
+								{
+									"key": "provider",
+									"value": "MTN"
+								}
+							]
+						},
+						"description": "Check if account holder is registered and active"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "05. 💰 Account Operations",
+			"item": [
+				{
+					"name": "Get Account Balance",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/balance?provider=MTN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"balance"
+							],
+							"query": [
+								{
+									"key": "provider",
+									"value": "MTN"
+								}
+							]
+						},
+						"description": "Get provider account balance"
+					},
+					"response": []
+				},
+				{
+					"name": "Check Account Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/{{api_prefix}}/user/status/{{test_customer_id}}?provider=MTN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"{{api_prefix}}",
+								"user",
+								"status",
+								"{{test_customer_id}}"
+							],
+							"query": [
+								{
+									"key": "provider",
+									"value": "MTN"
+								}
+							]
+						},
+						"description": "Check account status for a specific user"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "06. 🔄 Direct MTN API Calls",
+			"item": [
+				{
+					"name": "Direct BC-Authorize (MTN)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{mtn_access_token}}"
+							},
+							{
+								"key": "X-Target-Environment",
+								"value": "sandbox"
+							},
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{mtn_remittance_subscription_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "login_hint",
+									"value": "ID:{{test_customer_id}}/MSISDN",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "profile",
+									"type": "text"
+								},
+								{
+									"key": "access_type",
+									"value": "offline",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{mtn_sandbox_url}}/remittance/v1_0/bc-authorize",
+							"host": [
+								"{{mtn_sandbox_url}}"
+							],
+							"path": [
+								"remittance",
+								"v1_0",
+								"bc-authorize"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Direct OAuth2 Token (MTN)",
+					"request": {
+						"auth": {
+							"type": "basic",
+							"basic": [
+								{
+									"key": "username",
+									"value": "{{mtn_api_user}}",
+									"type": "string"
+								},
+								{
+									"key": "password",
+									"value": "{{mtn_api_key}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-Target-Environment",
+								"value": "sandbox"
+							},
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{mtn_remittance_subscription_key}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "urn:openid:params:grant-type:ciba",
+									"type": "text"
+								},
+								{
+									"key": "auth_req_id",
+									"value": "{{auth_req_id}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{mtn_sandbox_url}}/remittance/oauth2/token/",
+							"host": [
+								"{{mtn_sandbox_url}}"
+							],
+							"path": [
+								"remittance",
+								"oauth2",
+								"token",
+								""
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Direct User Info (MTN)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{oauth2_access_token}}"
+							},
+							{
+								"key": "X-Target-Environment",
+								"value": "sandbox"
+							},
+							{
+								"key": "Ocp-Apim-Subscription-Key",
+								"value": "{{mtn_remittance_subscription_key}}"
+							}
+						],
+						"url": {
+							"raw": "{{mtn_sandbox_url}}/remittance/oauth2/v1_0/userinfo",
+							"host": [
+								"{{mtn_sandbox_url}}"
+							],
+							"path": [
+								"remittance",
+								"oauth2",
+								"v1_0",
+								"userinfo"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "api_prefix",
+			"value": "/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "mtn_sandbox_url",
+			"value": "https://sandbox.momodeveloper.mtn.com",
+			"type": "string"
+		},
+		{
+			"key": "api_key",
+			"value": "",
+			"type": "string",
+			"description": "FlowPay API Key"
+		},
+		{
+			"key": "auth_req_id",
+			"value": "",
+			"type": "string",
+			"description": "Dynamic auth request ID from bc-authorize"
+		},
+		{
+			"key": "oauth2_access_token",
+			"value": "",
+			"type": "string",
+			"description": "OAuth2 access token from consent flow"
+		},
+		{
+			"key": "oauth2_refresh_token",
+			"value": "",
+			"type": "string",
+			"description": "OAuth2 refresh token"
+		}
+	]
+}

@@ -1,0 +1,189 @@
+{
+  "info": {
+    "name": "FlowPay Merchant Webhook Setup",
+    "description": "Complete guide for merchants to configure webhooks with FlowPay API",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "merchant_base_url",
+      "value": "{{base_url}}",
+      "type": "string",
+      "description": "FlowPay API base URL"
+    },
+    {
+      "key": "merchant_api_key", 
+      "value": "{{api_key}}",
+      "type": "string",
+      "description": "Merchant's FlowPay API key"
+    },
+    {
+      "key": "merchant_webhook_url",
+      "value": "https://your-site.com/webhook/flowpay",
+      "type": "string",
+      "description": "Merchant's webhook endpoint URL"
+    },
+    {
+      "key": "webhook_secret",
+      "value": "your_webhook_secret_here",
+      "type": "string",
+      "description": "Custom webhook secret for signature verification"
+    }
+  ],
+  "item": [
+    {
+      "name": "Step 1: Configure Webhook",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{merchant_api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"{{merchant_webhook_url}}\",\n  \"events\": [\n    \"payment.created\",\n    \"payment.updated\", \n    \"payment.completed\",\n    \"payment.failed\"\n  ],\n  \"secret\": \"{{webhook_secret}}\"\n}"
+        },
+        "url": {
+          "raw": "{{merchant_base_url}}{{api_prefix}}/webhooks/configure",
+          "host": ["{{merchant_base_url}}"],
+          "path": ["{{api_prefix}}", "webhooks", "configure"]
+        },
+        "description": "Configure webhook URL and events for receiving payment notifications"
+      },
+      "response": [
+        {
+          "name": "Success Response",
+          "body": "{\n  \"message\": \"Webhook configured successfully\",\n  \"url\": \"https://your-site.com/webhook/flowpay\",\n  \"events\": [\n    \"payment.created\",\n    \"payment.updated\",\n    \"payment.completed\",\n    \"payment.failed\"\n  ]\n}",
+          "status": "OK",
+          "code": 200
+        }
+      ]
+    },
+    {
+      "name": "Step 2: Check Webhook Status",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{merchant_api_key}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{merchant_base_url}}{{api_prefix}}/webhooks/status",
+          "host": ["{{merchant_base_url}}"],
+          "path": ["{{api_prefix}}", "webhooks", "status"]
+        },
+        "description": "Check current webhook configuration status"
+      },
+      "response": [
+        {
+          "name": "Configured Response",
+          "body": "{\n  \"configured\": true,\n  \"url\": \"https://your-site.com/webhook/flowpay\",\n  \"events\": [\n    \"payment.created\",\n    \"payment.updated\",\n    \"payment.completed\",\n    \"payment.failed\"\n  ]\n}",
+          "status": "OK", 
+          "code": 200
+        }
+      ]
+    },
+    {
+      "name": "Step 3: Test Webhook",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{merchant_api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"url\": \"{{merchant_webhook_url}}\"\n}"
+        },
+        "url": {
+          "raw": "{{merchant_base_url}}{{api_prefix}}/webhooks/test",
+          "host": ["{{merchant_base_url}}"],
+          "path": ["{{api_prefix}}", "webhooks", "test"]
+        },
+        "description": "Send a test webhook to verify your endpoint is working"
+      },
+      "response": [
+        {
+          "name": "Test Sent",
+          "body": "{\n  \"message\": \"Test webhook sent\",\n  \"url\": \"https://your-site.com/webhook/flowpay\",\n  \"status\": \"success\"\n}",
+          "status": "OK",
+          "code": 200
+        }
+      ]
+    },
+    {
+      "name": "Example: Create Payment (triggers webhook)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "X-API-Key",
+            "value": "{{merchant_api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type", 
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237680000000@cameroon\", \n  \"description\": \"Payment from merchant\",\n  \"provider\": \"mtn\",\n  \"timestamp\": \"{{$isoTimestamp}}\"\n}"
+        },
+        "url": {
+          "raw": "{{merchant_base_url}}{{api_prefix}}/payments",
+          "host": ["{{merchant_base_url}}"],
+          "path": ["{{api_prefix}}", "payments"]
+        },
+        "description": "Create payment - this will trigger webhooks to your configured URL"
+      },
+      "response": [
+        {
+          "name": "Payment Created - Webhooks Sent",
+          "body": "{\n  \"transactionId\": \"flowpay_tx_123456\",\n  \"status\": \"PENDING\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237680000000@cameroon\",\n  \"timestamp\": \"2025-08-14T10:30:45.123Z\",\n  \"message\": \"Payment initiated successfully - webhooks will be sent to your configured URL\"\n}",
+          "status": "Created",
+          "code": 201
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Auto-set timestamp for payments",
+          "if (pm.request.body && pm.request.body.raw) {",
+          "  const body = JSON.parse(pm.request.body.raw);",
+          "  if (body.timestamp === '{{$isoTimestamp}}') {",
+          "    body.timestamp = new Date().toISOString();",
+          "    pm.request.body.raw = JSON.stringify(body, null, 2);",
+          "  }",
+          "}"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ]
+}

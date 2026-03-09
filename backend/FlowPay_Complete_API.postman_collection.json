@@ -1,0 +1,1866 @@
+{
+  "info": {
+    "name": "FlowPay Complete API Collection",
+    "description": "Complete FlowPay API testing collection organized by functional areas. This collection covers all FlowPay endpoints including authentication, payments, refunds, webhooks, and administrative functions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string",
+      "description": "Base URL for the FlowPay API"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api/v1",
+      "type": "string",
+      "description": "API version prefix"
+    },
+    {
+      "key": "user_token",
+      "value": "",
+      "type": "string",
+      "description": "JWT token for authenticated user"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "type": "string",
+      "description": "API key for payment operations"
+    },
+    {
+      "key": "test_api_key",
+      "value": "test_key_flowpay_dev_2025",
+      "type": "string",
+      "description": "Development test key that works when DB is not connected"
+    },
+    {
+      "key": "last_transaction_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the last created transaction ID"
+    },
+    {
+      "key": "last_payment_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the last created payment ID"
+    },
+    {
+      "key": "last_refund_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the ID of the last created refund"
+    },
+    {
+      "key": "webhook_delivery_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the ID of the last webhook delivery"
+    },
+    {
+      "key": "last_transfer_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the ID of the last created transfer"
+    },
+    {
+      "key": "last_deposit_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the ID of the last created deposit"
+    },
+    {
+      "key": "auth_req_id",
+      "value": "",
+      "type": "string",
+      "description": "Stores the authorization request ID from consent"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string",
+      "description": "OAuth2 access token for advanced operations"
+    },
+    {
+      "key": "test_customer_id",
+      "value": "237680000000",
+      "type": "string",
+      "description": "Test customer MSISDN for consent flows"
+    },
+    {
+      "key": "test_business_id",
+      "value": "FlowPay_Test_Business",
+      "type": "string",
+      "description": "Test business ID for consent flows"
+    },
+    {
+      "key": "netflix_auth_req_id",
+      "value": "",
+      "type": "string",
+      "description": "Netflix subscription consent authorization request ID"
+    },
+    {
+      "key": "eneo_auth_req_id",
+      "value": "",
+      "type": "string",
+      "description": "ENEO bill payment consent authorization request ID"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Getting Started",
+      "item": [
+        {
+          "name": "Health & Status",
+          "item": [
+            {
+              "name": "Health Check",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}/health",
+                  "host": ["{{base_url}}"],
+                  "path": ["health"]
+                },
+                "description": "Check if the API is running and healthy"
+              },
+              "response": []
+            },
+            {
+              "name": "API Root Info",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": []
+                },
+                "description": "Get API version and basic information"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Quick Test",
+          "item": [
+            {
+              "name": "Test Payment with Development Key",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"last_transaction_id\", jsonData.transactionId);",
+                      "    pm.collectionVariables.set(\"last_payment_id\", jsonData.id);",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{test_api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactionId\": \"test_{{$timestamp}}\",\n  \"from\": \"237670000000\",\n  \"to\": \"237680000000\",\n  \"amount\": 1000,\n  \"currency\": \"XAF\",\n  \"provider\": \"mtn\",\n  \"description\": \"Test payment\",\n  \"metadata\": {\n    \"test\": true\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"]
+                },
+                "description": "Quick test to verify the API is working with the development test key"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Initial setup and health checks to verify the API is running"
+    },
+    {
+      "name": "02. Authentication & Authorization",
+      "item": [
+        {
+          "name": "User Registration & Login",
+          "item": [
+            {
+              "name": "Register User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"user_token\", jsonData.token);",
+                      "    ",
+                      "    pm.test(\"User registered successfully\", function () {",
+                      "        pm.expect(jsonData).to.have.property('user');",
+                      "        pm.expect(jsonData).to.have.property('token');",
+                      "    });",
+                      "}",
+                      "",
+                      "pm.test(\"Status code is 201 or 409\", function () {",
+                      "    pm.expect(pm.response.code).to.be.oneOf([201, 409]);",
+                      "});"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"test@flowpay.com\",\n  \"password\": \"TestPassword123!\",\n  \"businessName\": \"Test Business\",\n  \"phoneNumber\": \"237670000000\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/auth/register",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["auth", "register"]
+                },
+                "description": "Register a new user account"
+              },
+              "response": []
+            },
+            {
+              "name": "Login User",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"user_token\", jsonData.token);",
+                      "    ",
+                      "    pm.test(\"Login successful\", function () {",
+                      "        pm.expect(jsonData).to.have.property('user');",
+                      "        pm.expect(jsonData).to.have.property('token');",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"test@flowpay.com\",\n  \"password\": \"TestPassword123!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/auth/login",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["auth", "login"]
+                },
+                "description": "Login with existing credentials"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "API Key Management",
+          "item": [
+            {
+              "name": "Create API Key",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"api_key\", jsonData.key);",
+                      "    ",
+                      "    pm.test(\"API key created\", function () {",
+                      "        pm.expect(jsonData).to.have.property('id');",
+                      "        pm.expect(jsonData).to.have.property('key');",
+                      "        pm.expect(jsonData).to.have.property('name');",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_token}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Production API Key\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/auth/api-keys",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["auth", "api-keys"]
+                },
+                "description": "Create a new API key for payment operations"
+              },
+              "response": []
+            },
+            {
+              "name": "List API Keys",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/auth/api-keys",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["auth", "api-keys"]
+                },
+                "description": "List all API keys for the authenticated user"
+              },
+              "response": []
+            },
+            {
+              "name": "Revoke API Key",
+              "request": {
+                "method": "DELETE",
+                "header": [
+                  {
+                    "key": "Authorization",
+                    "value": "Bearer {{user_token}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/auth/api-keys/:keyId",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["auth", "api-keys", ":keyId"],
+                  "variable": [
+                    {
+                      "key": "keyId",
+                      "value": "{{api_key_id}}"
+                    }
+                  ]
+                },
+                "description": "Revoke an existing API key"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "User authentication and API key management"
+    },
+    {
+      "name": "03. Payment Processing",
+      "item": [
+        {
+          "name": "Core Payment Operations",
+          "item": [
+            {
+              "name": "Create Payment",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"last_transaction_id\", jsonData.transactionId);",
+                      "    pm.collectionVariables.set(\"last_payment_id\", jsonData.id);",
+                      "    ",
+                      "    pm.test(\"Payment created\", function () {",
+                      "        pm.expect(jsonData).to.have.property('id');",
+                      "        pm.expect(jsonData).to.have.property('transactionId');",
+                      "        pm.expect(jsonData).to.have.property('status');",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactionId\": \"txn_{{$timestamp}}\",\n  \"from\": \"237670000000\",\n  \"to\": \"237680000000\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"provider\": \"mtn\",\n  \"description\": \"Payment for services\",\n  \"metadata\": {\n    \"orderId\": \"ORD-123\",\n    \"customerName\": \"John Doe\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"]
+                },
+                "description": "Initiate a new payment transaction"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Payment by Transaction ID",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments/{{last_transaction_id}}",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments", "{{last_transaction_id}}"]
+                },
+                "description": "Retrieve payment details by transaction ID"
+              },
+              "response": []
+            },
+            {
+              "name": "List Payments",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments?limit=10&offset=0&status=COMPLETED",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10",
+                      "description": "Number of results to return"
+                    },
+                    {
+                      "key": "offset",
+                      "value": "0",
+                      "description": "Number of results to skip"
+                    },
+                    {
+                      "key": "status",
+                      "value": "COMPLETED",
+                      "description": "Filter by payment status"
+                    },
+                    {
+                      "key": "from",
+                      "value": "",
+                      "description": "Filter by sender phone",
+                      "disabled": true
+                    },
+                    {
+                      "key": "to",
+                      "value": "",
+                      "description": "Filter by recipient",
+                      "disabled": true
+                    },
+                    {
+                      "key": "startDate",
+                      "value": "",
+                      "description": "Filter by start date",
+                      "disabled": true
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "",
+                      "description": "Filter by end date",
+                      "disabled": true
+                    }
+                  ]
+                },
+                "description": "List all payments with optional filters"
+              },
+              "response": []
+            },
+            {
+              "name": "Cancel Payment",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments/{{last_transaction_id}}/cancel",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments", "{{last_transaction_id}}", "cancel"]
+                },
+                "description": "Cancel a pending payment"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Payment Analytics",
+          "item": [
+            {
+              "name": "Get Payment Statistics",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments/stats?startDate=2024-01-01&endDate=2024-12-31",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments", "stats"],
+                  "query": [
+                    {
+                      "key": "startDate",
+                      "value": "2024-01-01",
+                      "description": "Start date for statistics"
+                    },
+                    {
+                      "key": "endDate",
+                      "value": "2024-12-31",
+                      "description": "End date for statistics"
+                    }
+                  ]
+                },
+                "description": "Get payment statistics and analytics"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Core payment processing endpoints"
+    },
+    {
+      "name": "04. Money Transfers & Disbursements",
+      "item": [
+        {
+          "name": "Transfer Operations",
+          "item": [
+            {
+              "name": "Create Transfer",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"last_transfer_id\", jsonData.data.transferId);",
+                      "    pm.test(\"Transfer created successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.transferId).to.not.be.empty;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transferId\": \"txf_{{$timestamp}}\",\n  \"from\": \"237670000000\",\n  \"to\": \"237680000000\",\n  \"amount\": 10000,\n  \"currency\": \"XAF\",\n  \"description\": \"Transfer to friend\",\n  \"provider\": \"MTN\",\n  \"metadata\": {\n    \"purpose\": \"personal_transfer\",\n    \"category\": \"friends_and_family\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/transfers",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["transfers"]
+                },
+                "description": "Send money to another mobile money account"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Transfer Details",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/transfers/{{last_transfer_id}}",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["transfers", "{{last_transfer_id}}"]
+                },
+                "description": "Get details of a specific transfer"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Transfer Status",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/transfers/{{last_transfer_id}}/status",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["transfers", "{{last_transfer_id}}", "status"]
+                },
+                "description": "Check the current status of a transfer"
+              },
+              "response": []
+            },
+            {
+              "name": "List Transfers",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/transfers?page=1&limit=10&status=COMPLETED",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["transfers"],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "COMPLETED"
+                    }
+                  ]
+                },
+                "description": "List all transfers with pagination and filtering"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Account Management",
+          "item": [
+            {
+              "name": "Get Account Balance",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/account/balance?provider=MTN",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["account", "balance"],
+                  "query": [
+                    {
+                      "key": "provider",
+                      "value": "MTN"
+                    }
+                  ]
+                },
+                "description": "Get current account balance for MTN Mobile Money"
+              },
+              "response": []
+            },
+            {
+              "name": "Validate Recipient",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountId\": \"237680000000\",\n  \"provider\": \"MTN\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/account/validate",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["account", "validate"]
+                },
+                "description": "Check if a recipient account is active and valid"
+              },
+              "response": []
+            },
+            {
+              "name": "Get User Info",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accountId\": \"237680000000\",\n  \"provider\": \"MTN\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/account/userinfo",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["account", "userinfo"]
+                },
+                "description": "Get basic user information for an account"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Deposit Operations",
+          "item": [
+            {
+              "name": "Create Deposit",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"last_deposit_id\", jsonData.data.depositId);",
+                      "    pm.test(\"Deposit created successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.depositId).to.not.be.empty;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"depositId\": \"dep_{{$timestamp}}\",\n  \"accountId\": \"237680000000\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Account funding\",\n  \"provider\": \"MTN\",\n  \"metadata\": {\n    \"source\": \"bank_transfer\",\n    \"reference\": \"BNK{{$timestamp}}\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/deposits",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["deposits"]
+                },
+                "description": "Deposit funds to a mobile money account"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Money transfer, disbursement, and account management operations"
+    },
+    {
+      "name": "05. OAuth2 & Consent Management",
+      "item": [
+        {
+          "name": "Consent Authorization",
+          "item": [
+            {
+              "name": "Create General Consent",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"auth_req_id\", jsonData.data.authReqId);",
+                      "    pm.test(\"Consent created successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.authReqId).to.not.be.empty;",
+                      "        pm.expect(jsonData.data.pollUrl).to.not.be.empty;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"{{test_customer_id}}\",\n  \"scope\": \"profile transfer balance\",\n  \"accessType\": \"offline\",\n  \"businessId\": \"{{test_business_id}}\",\n  \"description\": \"Authorize FlowPay to access your account for recurring transactions\",\n  \"provider\": \"MTN\",\n  \"consentValidIn\": 3600,\n  \"metadata\": {\n    \"type\": \"general_access\",\n    \"purpose\": \"recurring_payments\"\n  }\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/consent",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["consent"]
+                },
+                "description": "Create a general consent authorization for account access"
+              },
+              "response": []
+            },
+            {
+              "name": "Create Subscription Consent",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"auth_req_id\", jsonData.data.authReqId);",
+                      "    pm.test(\"Subscription consent created successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.authReqId).to.not.be.empty;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"{{test_customer_id}}\",\n  \"businessId\": \"Netflix_Cameroon\",\n  \"amount\": 5000,\n  \"frequency\": \"monthly\",\n  \"provider\": \"MTN\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/consent/subscription",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["consent", "subscription"]
+                },
+                "description": "Create consent for subscription billing (e.g., Netflix monthly)"
+              },
+              "response": []
+            },
+            {
+              "name": "Create Bill Payment Consent",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"auth_req_id\", jsonData.data.authReqId);",
+                      "    pm.test(\"Bill payment consent created successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.authReqId).to.not.be.empty;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"{{test_customer_id}}\",\n  \"businessId\": \"ENEO_Utility\",\n  \"maxAmount\": 50000,\n  \"provider\": \"MTN\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/consent/bill-payment",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["consent", "bill-payment"]
+                },
+                "description": "Create consent for utility bill auto-payment"
+              },
+              "response": []
+            },
+            {
+              "name": "Create Account Access Consent",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 201) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"auth_req_id\", jsonData.data.authReqId);",
+                      "    pm.test(\"Account access consent created successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.authReqId).to.not.be.empty;",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"customerId\": \"{{test_customer_id}}\",\n  \"businessId\": \"Budget_Tracker_App\",\n  \"provider\": \"MTN\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/consent/account-access",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["consent", "account-access"]
+                },
+                "description": "Create consent for third-party app to view account info"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Token Management",
+          "item": [
+            {
+              "name": "Get Access Token (Polling)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"access_token\", jsonData.data.accessToken);",
+                      "    pm.test(\"Access token retrieved successfully\", function () {",
+                      "        pm.expect(jsonData.success).to.be.true;",
+                      "        pm.expect(jsonData.data.accessToken).to.not.be.empty;",
+                      "        pm.expect(jsonData.data.tokenType).to.equal(\"Bearer\");",
+                      "    });",
+                      "} else if (pm.response.code === 202) {",
+                      "    pm.test(\"Consent still pending approval\", function () {",
+                      "        var jsonData = pm.response.json();",
+                      "        pm.expect(jsonData.success).to.be.false;",
+                      "        pm.expect(jsonData.error).to.include(\"pending\");",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/consent/token/{{auth_req_id}}?provider=MTN",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["consent", "token", "{{auth_req_id}}"],
+                  "query": [
+                    {
+                      "key": "provider",
+                      "value": "MTN"
+                    }
+                  ]
+                },
+                "description": "Poll for access token after customer approves consent via SMS"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "OAuth2 User Info",
+          "item": [
+            {
+              "name": "Get User Info with OAuth2 Token",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"accessToken\": \"{{access_token}}\",\n  \"provider\": \"MTN\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/consent/userinfo",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["consent", "userinfo"]
+                },
+                "description": "Get user profile information using OAuth2 access token"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Use Case Examples",
+          "item": [
+            {
+              "name": "Example: Netflix Subscription Flow",
+              "item": [
+                {
+                  "name": "1. Create Netflix Subscription Consent",
+                  "event": [
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "if (pm.response.code === 201) {",
+                          "    var jsonData = pm.response.json();",
+                          "    pm.collectionVariables.set(\"netflix_auth_req_id\", jsonData.data.authReqId);",
+                          "}"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "X-API-Key",
+                        "value": "{{api_key}}"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"customerId\": \"237680000000\",\n  \"businessId\": \"Netflix_Cameroon\",\n  \"amount\": 5000,\n  \"frequency\": \"monthly\",\n  \"provider\": \"MTN\"\n}"
+                    },
+                    "url": {
+                      "raw": "{{base_url}}{{api_prefix}}/consent/subscription",
+                      "host": ["{{base_url}}{{api_prefix}}"],
+                      "path": ["consent", "subscription"]
+                    },
+                    "description": "Step 1: Create monthly subscription consent for Netflix"
+                  }
+                },
+                {
+                  "name": "2. Poll for Netflix Token",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "X-API-Key",
+                        "value": "{{api_key}}"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}{{api_prefix}}/consent/token/{{netflix_auth_req_id}}",
+                      "host": ["{{base_url}}{{api_prefix}}"],
+                      "path": ["consent", "token", "{{netflix_auth_req_id}}"]
+                    },
+                    "description": "Step 2: Poll for token after customer approves via SMS"
+                  }
+                }
+              ],
+              "description": "Complete Netflix subscription setup flow"
+            },
+            {
+              "name": "Example: ENEO Bill Payment Setup",
+              "item": [
+                {
+                  "name": "1. Create ENEO Bill Payment Consent",
+                  "event": [
+                    {
+                      "listen": "test",
+                      "script": {
+                        "exec": [
+                          "if (pm.response.code === 201) {",
+                          "    var jsonData = pm.response.json();",
+                          "    pm.collectionVariables.set(\"eneo_auth_req_id\", jsonData.data.authReqId);",
+                          "}"
+                        ],
+                        "type": "text/javascript"
+                      }
+                    }
+                  ],
+                  "request": {
+                    "method": "POST",
+                    "header": [
+                      {
+                        "key": "Content-Type",
+                        "value": "application/json"
+                      },
+                      {
+                        "key": "X-API-Key",
+                        "value": "{{api_key}}"
+                      }
+                    ],
+                    "body": {
+                      "mode": "raw",
+                      "raw": "{\n  \"customerId\": \"237680000000\",\n  \"businessId\": \"ENEO_Utility\",\n  \"maxAmount\": 50000,\n  \"provider\": \"MTN\"\n}"
+                    },
+                    "url": {
+                      "raw": "{{base_url}}{{api_prefix}}/consent/bill-payment",
+                      "host": ["{{base_url}}{{api_prefix}}"],
+                      "path": ["consent", "bill-payment"]
+                    },
+                    "description": "Step 1: Create utility bill auto-payment consent"
+                  }
+                },
+                {
+                  "name": "2. Poll for ENEO Token",
+                  "request": {
+                    "method": "GET",
+                    "header": [
+                      {
+                        "key": "X-API-Key",
+                        "value": "{{api_key}}"
+                      }
+                    ],
+                    "url": {
+                      "raw": "{{base_url}}{{api_prefix}}/consent/token/{{eneo_auth_req_id}}",
+                      "host": ["{{base_url}}{{api_prefix}}"],
+                      "path": ["consent", "token", "{{eneo_auth_req_id}}"]
+                    },
+                    "description": "Step 2: Poll for token after customer approves"
+                  }
+                }
+              ],
+              "description": "Complete ENEO utility bill auto-payment setup"
+            }
+          ]
+        }
+      ],
+      "description": "Advanced OAuth2 consent management for recurring payments, subscriptions, and third-party app authorization - competitive features that MTN BC-Authorize enables"
+    },
+    {
+      "name": "06. Refunds & Adjustments",
+      "item": [
+        {
+          "name": "Refund Operations",
+          "item": [
+            {
+              "name": "Initiate Refund",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "if (pm.response.code === 200) {",
+                      "    var jsonData = pm.response.json();",
+                      "    pm.collectionVariables.set(\"last_refund_id\", jsonData.refundId);",
+                      "    ",
+                      "    pm.test(\"Refund initiated successfully\", function () {",
+                      "        pm.expect(jsonData).to.have.property('refundId');",
+                      "        pm.expect(jsonData).to.have.property('status');",
+                      "    });",
+                      "}"
+                    ],
+                    "type": "text/javascript"
+                  }
+                }
+              ],
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"amount\": 2500,\n  \"reason\": \"Customer request - duplicate payment\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments/{{last_payment_id}}/refund",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments", "{{last_payment_id}}", "refund"]
+                },
+                "description": "Initiate a full or partial refund for a completed payment"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Refund Status",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/refunds/{{last_refund_id}}/status",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["refunds", "{{last_refund_id}}", "status"]
+                },
+                "description": "Check the current status of a refund"
+              },
+              "response": []
+            },
+            {
+              "name": "List Payment Refunds",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments/{{last_payment_id}}/refunds",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments", "{{last_payment_id}}", "refunds"]
+                },
+                "description": "Get all refunds associated with a payment"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Refund processing and management"
+    },
+    {
+      "name": "07. Notifications",
+      "item": [
+        {
+          "name": "Customer Notifications",
+          "item": [
+            {
+              "name": "Send Payment Notification",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Your payment of 5000 XAF has been processed successfully. Thank you!\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments/{{last_payment_id}}/notify",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments", "{{last_payment_id}}", "notify"]
+                },
+                "description": "Send SMS/push notification to customer (max 160 characters)"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Customer notification services"
+    },
+    {
+      "name": "08. Webhooks & Events",
+      "item": [
+        {
+          "name": "Webhook Configuration",
+          "item": [
+            {
+              "name": "Configure Webhook",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"https://webhook.site/unique-id\",\n  \"events\": [\"payment.completed\", \"payment.failed\", \"payment.refunded\"],\n  \"secret\": \"my_webhook_secret_key\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/configure",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "configure"]
+                },
+                "description": "Configure webhook URL and events for receiving payment notifications"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Webhook Configuration",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/configuration",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "configuration"]
+                },
+                "description": "Get current webhook configuration"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Webhook Management",
+          "item": [
+            {
+              "name": "Get Webhook Delivery History",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/deliveries/{{last_payment_id}}?limit=10",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "deliveries", "{{last_payment_id}}"],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ]
+                },
+                "description": "Get webhook delivery history for a specific payment"
+              },
+              "response": []
+            },
+            {
+              "name": "Get Webhook Statistics",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/stats",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "stats"]
+                },
+                "description": "Get webhook delivery statistics"
+              },
+              "response": []
+            },
+            {
+              "name": "Retry Failed Webhooks",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/retry",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "retry"]
+                },
+                "description": "Retry all failed webhook deliveries from the last 24 hours"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Webhook Testing",
+          "item": [
+            {
+              "name": "Test Webhook Endpoint",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"url\": \"https://webhook.site/test-webhook\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/test",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "test"]
+                },
+                "description": "Test webhook endpoint with a sample payment event"
+              },
+              "response": []
+            },
+            {
+              "name": "Simulate MTN Webhook (Dev)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-Reference-Id",
+                    "value": "{{$guid}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"financialTransactionId\": \"FT123456789\",\n  \"externalId\": \"{{last_transaction_id}}\",\n  \"amount\": \"5000\",\n  \"currency\": \"XAF\",\n  \"payer\": {\n    \"partyIdType\": \"MSISDN\",\n    \"partyId\": \"237670000000\"\n  },\n  \"status\": \"SUCCESSFUL\",\n  \"reason\": null\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/mtn",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "mtn"]
+                },
+                "description": "Simulate an MTN webhook callback for testing (development only)"
+              },
+              "response": []
+            },
+            {
+              "name": "Simulate Orange Webhook (Dev)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactionId\": \"{{last_transaction_id}}\",\n  \"status\": \"SUCCESS\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/webhooks/orange",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["webhooks", "orange"]
+                },
+                "description": "Simulate an Orange Money webhook callback for testing"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Webhook configuration, management, and testing"
+    },
+    {
+      "name": "09. Provider Integration",
+      "item": [
+        {
+          "name": "MTN MoMo",
+          "item": [
+            {
+              "name": "MTN Health Check",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/providers/mtn/health",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["providers", "mtn", "health"]
+                },
+                "description": "Check MTN MoMo API health status"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Orange Money",
+          "item": [
+            {
+              "name": "Orange Health Check",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/providers/orange/health",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["providers", "orange", "health"]
+                },
+                "description": "Check Orange Money API health status"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Provider-specific endpoints and health checks"
+    },
+    {
+      "name": "10. Admin & Management",
+      "item": [
+        {
+          "name": "User Management",
+          "item": [],
+          "description": "User account management (future)"
+        },
+        {
+          "name": "Fee Management",
+          "item": [],
+          "description": "Fee structure management (future)"
+        },
+        {
+          "name": "Reconciliation",
+          "item": [],
+          "description": "Payment reconciliation (future)"
+        }
+      ],
+      "description": "Administrative and management functions"
+    },
+    {
+      "name": "11. Error Scenarios",
+      "item": [
+        {
+          "name": "Authentication Errors",
+          "item": [
+            {
+              "name": "Invalid API Key",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "invalid_key_12345",
+                    "type": "text"
+                  }
+                ],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"]
+                },
+                "description": "Test with invalid API key - should return 401"
+              },
+              "response": []
+            },
+            {
+              "name": "Missing API Key",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"]
+                },
+                "description": "Test without API key - should return 401"
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Validation Errors",
+          "item": [
+            {
+              "name": "Invalid Payment Data",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"from\": \"invalid_phone\",\n  \"amount\": -100\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"]
+                },
+                "description": "Test with invalid payment data - should return 400"
+              },
+              "response": []
+            },
+            {
+              "name": "Duplicate Transaction ID",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json",
+                    "type": "text"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{api_key}}",
+                    "type": "text"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"transactionId\": \"{{last_transaction_id}}\",\n  \"from\": \"237670000000\",\n  \"to\": \"237680000000\",\n  \"amount\": 1000,\n  \"currency\": \"XAF\",\n  \"provider\": \"mtn\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}{{api_prefix}}/payments",
+                  "host": ["{{base_url}}{{api_prefix}}"],
+                  "path": ["payments"]
+                },
+                "description": "Test with duplicate transaction ID - should return 409"
+              },
+              "response": []
+            }
+          ]
+        }
+      ],
+      "description": "Common error scenarios for testing error handling"
+    },
+    {
+      "name": "12. Future Features",
+      "item": [
+        {
+          "name": "Bulk Payments",
+          "item": [],
+          "description": "Bulk payment processing (coming soon)"
+        },
+        {
+          "name": "Recurring Payments",
+          "item": [],
+          "description": "Subscription and recurring payment management (coming soon)"
+        },
+        {
+          "name": "Settlement & Payouts",
+          "item": [],
+          "description": "Merchant settlements and payouts (coming soon)"
+        },
+        {
+          "name": "Reports & Analytics",
+          "item": [],
+          "description": "Advanced reporting and analytics (coming soon)"
+        }
+      ],
+      "description": "Placeholder for upcoming features"
+    }
+  ]
+}

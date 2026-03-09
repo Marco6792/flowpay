@@ -1,0 +1,732 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                 String             @id @default(cuid())
+  email              String             @unique
+  username           String             @unique
+  passwordHash       String
+  businessName       String
+  businessType       String?            @default("ECOMMERCE")
+  registrationNumber String?
+  taxNumber          String?
+  phoneNumber        String?
+  address            String?
+  city               String?
+  country            String             @default("CM")
+  isVerified         Boolean            @default(false)
+  kycStatus          String             @default("PENDING")
+  tier               String             @default("STARTER")
+  role               String             @default("MERCHANT")
+  dailyLimit         Float              @default(1000000)
+  monthlyLimit       Float              @default(30000000)
+  transactionLimit   Float              @default(500000)
+  commissionRate     Float              @default(0.02)
+  settlementAccount  String?
+  settlementBank     String?
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+  lastLoginAt        DateTime?
+  apiKeys            ApiKey[]
+  deposits           Deposit[]
+  documents          MerchantDocument[]
+  merchantFees       MerchantFee[]
+  wallets            MerchantWallet[]
+  notifications      Notification[]
+  payments           Payment[]
+  preApprovals       PreApproval[]
+  settlements        Settlement[]
+  transfers          Transfer[]
+  settings           UserSettings?
+  withdrawals        Withdrawal[]
+
+  @@index([email])
+  @@index([username])
+  @@index([businessName])
+  @@index([kycStatus])
+  @@index([role])
+  @@map("users")
+}
+
+model UserSettings {
+  id                String   @id @default(cuid())
+  userId            String   @unique
+  webhookUrl        String?
+  webhookSecret     String?
+  webhookEvents     String[] @default(["payment.created", "payment.completed", "payment.failed", "payment.updated", "transfer.created", "transfer.completed", "transfer.failed", "transfer.updated", "deposit.created", "deposit.completed", "deposit.failed", "deposit.updated", "withdrawal.created", "withdrawal.completed", "withdrawal.failed", "withdrawal.updated"])
+  notificationEmail String?
+  notificationPhone String?
+  enableSMS         Boolean  @default(false)
+  enableEmail       Boolean  @default(true)
+  defaultProvider   String?
+  allowedProviders  String[] @default(["MTN", "ORANGE"])
+  autoRetry         Boolean  @default(true)
+  retryAttempts     Int      @default(3)
+  timezone          String   @default("Africa/Douala")
+  language          String   @default("en")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model ApiKey {
+  id           String        @id @default(cuid())
+  key          String        @unique
+  name         String
+  userId       String
+  mode         ApiKeyMode    @default(SANDBOX)
+  isActive     Boolean       @default(true)
+  lastUsed     DateTime?
+  rateLimit    Int           @default(100)
+  ipWhitelist  String[]      @default([])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deposits     Deposit[]
+  payments     Payment[]
+  preApprovals PreApproval[]
+  transfers    Transfer[]
+  withdrawals  Withdrawal[]
+
+  @@index([key])
+  @@index([userId])
+  @@index([mode])
+  @@map("api_keys")
+}
+
+model Payment {
+  id                     String                @id @default(cuid())
+  transactionId          String                @unique
+  from                   String
+  to                     String
+  amount                 Float
+  currency               String                @default("XAF")
+  timestamp              DateTime
+  status                 PaymentStatus         @default(PENDING)
+  provider               Provider?
+  providerReference      String?
+  financialTransactionId String?
+  metadata               Json?
+  fee                    Float?
+  commission             Float?
+  netAmount              Float?
+  apiKeyId               String
+  userId                 String?
+  walletTransactionId    String?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+  preApprovalId          String?
+  auditLogs              AuditLog[]
+  paymentNotifications   PaymentNotification[]
+  apiKey                 ApiKey                @relation(fields: [apiKeyId], references: [id])
+  preApproval            PreApproval?          @relation("PreApprovalPayments", fields: [preApprovalId], references: [id])
+  user                   User?                 @relation(fields: [userId], references: [id])
+  refunds                Refund[]
+  webhookDeliveries      WebhookDelivery[]
+
+  @@index([transactionId])
+  @@index([status])
+  @@index([from])
+  @@index([to])
+  @@index([timestamp])
+  @@index([apiKeyId])
+  @@index([provider])
+  @@map("payments")
+}
+
+model Refund {
+  id                String       @id @default(cuid())
+  paymentId         String
+  refundReferenceId String       @unique @map("refund_reference_id")
+  amount            Float
+  currency          String       @default("XAF")
+  status            RefundStatus @default(PENDING)
+  reason            String?
+  providerResponse  Json?
+  financialTransactionId String?
+  createdAt         DateTime     @default(now())
+  completedAt       DateTime?    @map("completed_at")
+  updatedAt         DateTime     @updatedAt
+  metadata          Json?
+  payment           Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([refundReferenceId])
+  @@index([status])
+  @@map("refunds")
+}
+
+model PaymentNotification {
+  id          String    @id @default(cuid())
+  paymentId   String    @map("payment_id")
+  message     String
+  delivered   Boolean   @default(false)
+  deliveredAt DateTime? @map("delivered_at")
+  provider    Provider?
+  response    Json?
+  createdAt   DateTime  @default(now())
+  payment     Payment   @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([delivered])
+  @@map("payment_notifications")
+}
+
+model Transfer {
+  id                    String                    @id @default(cuid())
+  transferId            String                    @unique
+  from                  String
+  to                    String
+  amount                Float
+  currency              String                    @default("XAF")
+  description           String?
+  status                TransferStatus            @default(PENDING)
+  provider              Provider?
+  providerReference     String?
+  financialTransactionId String?
+  fee                   Float?
+  metadata              Json?
+  apiKeyId              String
+  userId                String?
+  createdAt             DateTime                  @default(now())
+  updatedAt             DateTime                  @updatedAt
+  completedAt           DateTime?
+  providerResponse      Json?
+  auditLogs             TransferAuditLog[]
+  webhookDeliveries     TransferWebhookDelivery[]
+  apiKey                ApiKey                    @relation(fields: [apiKeyId], references: [id])
+  user                  User?                     @relation(fields: [userId], references: [id])
+  webhookDeliveriesMain WebhookDelivery[]
+
+  @@index([transferId])
+  @@index([status])
+  @@index([from])
+  @@index([to])
+  @@index([apiKeyId])
+  @@index([provider])
+  @@map("transfers")
+}
+
+model TransferWebhookDelivery {
+  id                String        @id @default(cuid())
+  transferId        String
+  url               String
+  status            WebhookStatus @default(PENDING)
+  attempts          Int           @default(0)
+  lastAttempt       DateTime?
+  nextAttempt       DateTime?
+  response          Json?
+  lastError         String?
+  deliveredAt       DateTime?
+  provider          String?
+  providerSignature String?       @map("provider_signature")
+  payload           Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  transfer          Transfer      @relation(fields: [transferId], references: [id], onDelete: Cascade)
+
+  @@index([transferId])
+  @@index([status])
+  @@index([nextAttempt])
+  @@index([provider])
+  @@map("transfer_webhook_deliveries")
+}
+
+model TransferAuditLog {
+  id         String    @id @default(cuid())
+  transferId String?
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  metadata   Json?
+  createdAt  DateTime  @default(now())
+  transfer   Transfer? @relation(fields: [transferId], references: [id])
+
+  @@index([transferId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("transfer_audit_logs")
+}
+
+model Deposit {
+  id                String            @id @default(cuid())
+  depositId         String            @unique
+  accountId         String
+  amount            Float
+  currency          String            @default("XAF")
+  description       String?
+  status            DepositStatus     @default(PENDING)
+  provider          Provider?
+  providerReference String?
+  financialTransactionId String?
+  fee               Float?
+  metadata          Json?
+  apiKeyId          String
+  userId            String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  completedAt       DateTime?
+  providerResponse  Json?
+  apiKey            ApiKey            @relation(fields: [apiKeyId], references: [id])
+  user              User?             @relation(fields: [userId], references: [id])
+  webhookDeliveries WebhookDelivery[]
+
+  @@index([depositId])
+  @@index([accountId])
+  @@index([apiKeyId])
+  @@index([userId])
+  @@index([status])
+  @@index([provider])
+  @@index([createdAt])
+  @@map("deposits")
+}
+
+model Withdrawal {
+  id                String            @id @default(cuid())
+  withdrawId        String            @unique
+  accountId         String
+  amount            Float
+  currency          String            @default("XAF")
+  description       String?
+  status            WithdrawalStatus  @default(PENDING)
+  provider          Provider?
+  providerReference String?
+  financialTransactionId String?
+  fee               Float?
+  metadata          Json?
+  rawCreateRequest  Json?
+  rawCreateResponse Json?
+  rawStatusResponse Json?
+  apiKeyId          String
+  userId            String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  completedAt       DateTime?
+  webhookDeliveries WebhookDelivery[]
+  apiKey            ApiKey            @relation(fields: [apiKeyId], references: [id])
+  user              User?             @relation(fields: [userId], references: [id])
+
+  @@index([withdrawId])
+  @@index([accountId])
+  @@index([apiKeyId])
+  @@index([userId])
+  @@index([status])
+  @@index([provider])
+  @@index([createdAt])
+  @@map("withdrawals")
+}
+
+model PreApproval {
+  id                    String                       @id @default(cuid())
+  preApprovalId         String                       @unique
+  referenceId           String                       @unique
+  payerPhone            String
+  payerCurrency         String                       @default("XAF")
+  payerMessage          String?
+  validityTime          Int
+  expiresAt             DateTime
+  status                PreApprovalStatus            @default(PENDING)
+  provider              Provider                     @default(MTN)
+  providerReference     String?
+  rawCreateRequest      Json?
+  rawCreateResponse     Json?
+  rawStatusResponse     Json?
+  rawCancelResponse     Json?
+  apiKeyId              String
+  userId                String?
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+  approvedAt            DateTime?
+  cancelledAt           DateTime?
+  metadata              Json?
+  payments              Payment[]                    @relation("PreApprovalPayments")
+  webhookDeliveries     PreApprovalWebhookDelivery[]
+  apiKey                ApiKey                       @relation(fields: [apiKeyId], references: [id])
+  user                  User?                        @relation(fields: [userId], references: [id])
+  webhookDeliveriesMain WebhookDelivery[]
+
+  @@index([preApprovalId])
+  @@index([referenceId])
+  @@index([payerPhone])
+  @@index([apiKeyId])
+  @@index([userId])
+  @@index([status])
+  @@index([provider])
+  @@index([createdAt])
+  @@index([expiresAt])
+  @@map("preapprovals")
+}
+
+model PreApprovalWebhookDelivery {
+  id                String        @id @default(cuid())
+  preApprovalId     String
+  url               String
+  status            WebhookStatus @default(PENDING)
+  attempts          Int           @default(0)
+  lastAttempt       DateTime?
+  nextAttempt       DateTime?
+  response          Json?
+  lastError         String?
+  deliveredAt       DateTime?
+  provider          String?
+  providerSignature String?       @map("provider_signature")
+  payload           Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  preApproval       PreApproval   @relation(fields: [preApprovalId], references: [id], onDelete: Cascade)
+
+  @@index([preApprovalId])
+  @@index([status])
+  @@index([nextAttempt])
+  @@index([provider])
+  @@map("preapproval_webhook_deliveries")
+}
+
+model WebhookDelivery {
+  id                String        @id @default(cuid())
+  paymentId         String?
+  url               String
+  status            WebhookStatus @default(PENDING)
+  attempts          Int           @default(0)
+  lastAttempt       DateTime?
+  nextAttempt       DateTime?
+  response          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  deliveredAt       DateTime?
+  lastError         String?
+  payload           Json?
+  provider          String?
+  providerSignature String?       @map("provider_signature")
+  depositId         String?
+  transferId        String?
+  preapprovalId     String?
+  withdrawalId      String?
+  deposit           Deposit?      @relation(fields: [depositId], references: [id], onDelete: Cascade)
+  payment           Payment?      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  preapproval       PreApproval?  @relation(fields: [preapprovalId], references: [id], onDelete: Cascade)
+  transfer          Transfer?     @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  withdrawal        Withdrawal?   @relation(fields: [withdrawalId], references: [id], onDelete: Cascade)
+
+  @@index([paymentId])
+  @@index([transferId])
+  @@index([depositId])
+  @@index([withdrawalId])
+  @@index([preapprovalId])
+  @@index([status])
+  @@index([nextAttempt])
+  @@index([provider])
+  @@map("webhook_deliveries")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  paymentId  String?
+  userId     String?
+  action     String
+  entityType String
+  entityId   String
+  oldValue   Json?
+  newValue   Json?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+  payment    Payment? @relation(fields: [paymentId], references: [id])
+
+  @@index([paymentId])
+  @@index([userId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+model Reconciliation {
+  id                String               @id @default(cuid())
+  date              DateTime
+  provider          Provider
+  totalTransactions Int
+  totalAmount       Float
+  reconciledCount   Int
+  discrepancies     Json?
+  status            ReconciliationStatus @default(PENDING)
+  completedAt       DateTime?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  @@index([date])
+  @@index([provider])
+  @@index([status])
+  @@map("reconciliations")
+}
+
+model Metric {
+  id        String   @id @default(cuid())
+  name      String
+  value     Float
+  tags      Json?
+  timestamp DateTime @default(now())
+
+  @@index([name])
+  @@index([timestamp])
+  @@map("metrics")
+}
+
+model FeeStructure {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String?
+  percentage   Float
+  minFee       Float
+  maxFee       Float
+  fixedFee     Float?
+  isDefault    Boolean       @default(false)
+  isActive     Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  createdBy    String?
+  merchantFees MerchantFee[]
+
+  @@index([isDefault])
+  @@index([isActive])
+  @@map("fee_structures")
+}
+
+model MerchantFee {
+  id               String       @id @default(cuid())
+  userId           String
+  feeStructureId   String
+  customPercentage Float?
+  customMinFee     Float?
+  customMaxFee     Float?
+  effectiveFrom    DateTime     @default(now())
+  effectiveTo      DateTime?
+  notes            String?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  createdBy        String?
+  feeStructure     FeeStructure @relation(fields: [feeStructureId], references: [id])
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, effectiveTo])
+  @@index([userId])
+  @@index([feeStructureId])
+  @@index([effectiveFrom])
+  @@index([effectiveTo])
+  @@map("merchant_fees")
+}
+
+model FeeVolumeTier {
+  id         String   @id @default(cuid())
+  name       String
+  minVolume  Float
+  maxVolume  Float?
+  percentage Float
+  minFee     Float
+  maxFee     Float
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([minVolume])
+  @@index([isActive])
+  @@map("fee_volume_tiers")
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  metadata  Json?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@map("notifications")
+}
+
+model MerchantWallet {
+  id               String              @id @default(cuid())
+  userId           String
+  provider         Provider
+  balance          Float               @default(0)
+  currency         String              @default("XAF")
+  status           String              @default("ACTIVE")
+  providerWalletId String?
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+  user             User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions     WalletTransaction[]
+
+  @@unique([userId, provider])
+  @@index([userId])
+  @@map("merchant_wallets")
+}
+
+model WalletTransaction {
+  id            String         @id @default(cuid())
+  walletId      String
+  type          String
+  amount        Float
+  balanceBefore Float
+  balanceAfter  Float
+  reference     String         @unique
+  description   String?
+  metadata      Json?
+  createdAt     DateTime       @default(now())
+  wallet        MerchantWallet @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("wallet_transactions")
+}
+
+model Settlement {
+  id               String    @id @default(cuid())
+  userId           String
+  amount           Float
+  currency         String    @default("XAF")
+  status           String    @default("PENDING")
+  bankName         String
+  accountNumber    String
+  accountName      String
+  transactionCount Int
+  startDate        DateTime
+  endDate          DateTime
+  paymentIds       String[]
+  processedAt      DateTime?
+  failureReason    String?
+  bankReference    String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  user             User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("settlements")
+}
+
+model MerchantDocument {
+  id         String    @id @default(cuid())
+  userId     String
+  type       String
+  fileName   String
+  fileUrl    String
+  fileSize   Int
+  status     String    @default("PENDING_REVIEW")
+  reviewNote String?
+  reviewedAt DateTime?
+  reviewedBy String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([type])
+  @@index([status])
+  @@map("merchant_documents")
+}
+
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum Provider {
+  MTN
+  ORANGE
+}
+
+enum RefundStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum TransferStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum DepositStatus {
+  PENDING
+  SUCCESSFUL
+  FAILED
+  CANCELLED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  EXPIRED
+  ONGOING
+  DELAYED
+}
+
+enum PreApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  CANCELLED
+  FAILED
+}
+
+enum WebhookStatus {
+  PENDING
+  DELIVERED
+  FAILED
+  ABANDONED
+}
+
+enum ReconciliationStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum NotificationType {
+  PAYMENT_SUCCESS
+  PAYMENT_FAILED
+  API_KEY_CREATED
+  API_KEY_REVOKED
+  ACCOUNT_VERIFIED
+  SYSTEM_ALERT
+}
+
+enum ApiKeyMode {
+  SANDBOX
+  LIVE
+}

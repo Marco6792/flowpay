@@ -1,0 +1,15 @@
+node_modules
+python_modules
+.venv
+venv
+.motia
+.mermaid
+dist
+*.pyc
+
+# Environment files (contain secrets)
+.env
+.env.local
+.env.sandbox
+.env.production
+!.env.example

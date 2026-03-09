@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(node -e:*)",
+      "Bash(npx prisma migrate dev:*)",
+      "Bash(for f in *.json)",
+      "Bash(do echo \"Validating: $f\")",
+      "Bash(done)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"C:\\\\Users\\\\FUJITSU\\\\Desktop\\\\software dev\\\\flowpay\\\\extract_vars.ps1\")"
+    ]
+  }
+}

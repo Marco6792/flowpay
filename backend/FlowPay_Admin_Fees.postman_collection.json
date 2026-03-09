@@ -1,0 +1,508 @@
+{
+  "info": {
+    "name": "FlowPay Admin - Fee Management",
+    "description": "Admin API endpoints for managing fee structures in FlowPay payment gateway",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{admin_jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Admin Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.token) {",
+                  "        pm.environment.set('admin_jwt_token', response.data.token);",
+                  "        pm.environment.set('admin_user_id', response.data.user.id);",
+                  "        console.log('✅ Admin logged in successfully');",
+                  "        console.log('Role:', response.data.user.role);",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.test('Login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.success).to.be.true;",
+                  "    pm.expect(response.data).to.have.property('token');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin@flowpay.com\",\n    \"password\": \"Admin@123456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "auth", "login"]
+            },
+            "description": "Login as admin to get JWT token"
+          }
+        },
+        {
+          "name": "Get Current Admin",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "auth", "me"]
+            },
+            "description": "Get current admin user info"
+          }
+        },
+        {
+          "name": "Create Admin User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"admin2@flowpay.com\",\n    \"password\": \"Admin@123456\",\n    \"firstName\": \"John\",\n    \"lastName\": \"Admin\",\n    \"role\": \"ADMIN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/auth/create-admin",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "auth", "create-admin"]
+            },
+            "description": "Create a new admin user (Super Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fee Structures",
+      "item": [
+        {
+          "name": "Create Fee Structure",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.data && response.data.id) {",
+                  "        pm.environment.set('fee_structure_id', response.data.id);",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response has fee structure', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('success', true);",
+                  "    pm.expect(response).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Standard Plan\",\n    \"description\": \"Standard fee structure for regular merchants\",\n    \"percentage\": 1.5,\n    \"minFee\": 50,\n    \"maxFee\": 5000,\n    \"fixedFee\": 0,\n    \"isDefault\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/structures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "structures"]
+            },
+            "description": "Create a new fee structure (Super Admin only)"
+          }
+        },
+        {
+          "name": "Update Fee Structure",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Premium Plan\",\n    \"description\": \"Reduced fees for premium merchants\",\n    \"percentage\": 1.2,\n    \"minFee\": 40,\n    \"maxFee\": 4000,\n    \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/structures/{{fee_structure_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "structures", "{{fee_structure_id}}"]
+            },
+            "description": "Update an existing fee structure (Super Admin only)"
+          }
+        },
+        {
+          "name": "List Fee Structures",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/structures?includeInactive=false",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "structures"],
+              "query": [
+                {
+                  "key": "includeInactive",
+                  "value": "false",
+                  "description": "Include inactive fee structures"
+                }
+              ]
+            },
+            "description": "Get all fee structures (Admin)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Merchant Fees",
+      "item": [
+        {
+          "name": "Assign Fee to Merchant",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 201', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Merchant fee assigned', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('success', true);",
+                  "    pm.expect(response).to.have.property('data');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"{{merchant_user_id}}\",\n    \"feeStructureId\": \"{{fee_structure_id}}\",\n    \"customPercentage\": null,\n    \"customMinFee\": null,\n    \"customMaxFee\": null,\n    \"notes\": \"Assigned standard fee structure to merchant\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/merchants/assign",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "merchants", "assign"]
+            },
+            "description": "Assign a fee structure to a merchant (Admin)"
+          }
+        },
+        {
+          "name": "Assign Custom Fee to Merchant",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": \"{{merchant_user_id}}\",\n    \"feeStructureId\": \"{{fee_structure_id}}\",\n    \"customPercentage\": 0.8,\n    \"customMinFee\": 25,\n    \"customMaxFee\": 2500,\n    \"notes\": \"Special rate for high-volume merchant\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/merchants/assign",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "merchants", "assign"]
+            },
+            "description": "Assign custom fee overrides to a specific merchant"
+          }
+        },
+        {
+          "name": "Get Merchant Fee History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/merchants/{{merchant_user_id}}/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "merchants", "{{merchant_user_id}}", "history"]
+            },
+            "description": "Get fee assignment history for a merchant"
+          }
+        },
+        {
+          "name": "Get Merchant Current Fee",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/merchants/{{merchant_user_id}}/current",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "merchants", "{{merchant_user_id}}", "current"]
+            },
+            "description": "Get current fee structure and monthly volume for a merchant"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Fee Calculation",
+      "item": [
+        {
+          "name": "Calculate Fee Preview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"amount\": 10000,\n    \"userId\": \"{{merchant_user_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/calculate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "calculate"]
+            },
+            "description": "Preview fee calculation for a transaction amount"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Volume Tiers",
+      "item": [
+        {
+          "name": "Create Volume Tier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Silver Tier\",\n    \"minVolume\": 1000000,\n    \"maxVolume\": 5000000,\n    \"percentage\": 1.2,\n    \"minFee\": 40,\n    \"maxFee\": 4000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/volume-tiers",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "volume-tiers"]
+            },
+            "description": "Create a volume-based pricing tier (Super Admin only)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get Revenue Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/revenue?startDate=2025-01-01&endDate=2025-12-31&groupBy=month",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "revenue"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-01-01",
+                  "description": "Start date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-12-31",
+                  "description": "End date (YYYY-MM-DD)"
+                },
+                {
+                  "key": "groupBy",
+                  "value": "month",
+                  "description": "Group by: day, week, or month"
+                }
+              ]
+            },
+            "description": "Get fee revenue report with breakdown"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Examples",
+      "item": [
+        {
+          "name": "Setup: Create Default Fee Structure",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Default\",\n    \"description\": \"Default fee structure for new merchants\",\n    \"percentage\": 1.5,\n    \"minFee\": 50,\n    \"maxFee\": 5000,\n    \"isDefault\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/structures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "structures"]
+            }
+          }
+        },
+        {
+          "name": "Setup: Create Premium Fee Structure",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Premium\",\n    \"description\": \"Premium fee structure for VIP merchants\",\n    \"percentage\": 1.0,\n    \"minFee\": 30,\n    \"maxFee\": 3000,\n    \"isDefault\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/structures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "structures"]
+            }
+          }
+        },
+        {
+          "name": "Setup: Create Enterprise Fee Structure",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Enterprise\",\n    \"description\": \"Enterprise fee structure for high-volume merchants\",\n    \"percentage\": 0.5,\n    \"minFee\": 20,\n    \"maxFee\": 2000,\n    \"isDefault\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/fees/structures",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "fees", "structures"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Pre-request script to ensure authentication",
+          "if (!pm.environment.get('admin_jwt_token')) {",
+          "    console.log('Admin JWT token not set. Please login as admin first.');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for authentication errors",
+          "if (pm.response.code === 401) {",
+          "    console.log('Authentication failed. Please login as admin.');",
+          "}",
+          "",
+          "if (pm.response.code === 403) {",
+          "    console.log('Permission denied. Ensure you have the required admin role.');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "admin_jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "fee_structure_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "merchant_user_id",
+      "value": "cme9rjyi90000qxwkksbx0073",
+      "type": "string"
+    }
+  ]
+}

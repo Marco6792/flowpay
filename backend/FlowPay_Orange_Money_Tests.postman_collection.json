@@ -1,0 +1,501 @@
+{
+  "info": {
+    "name": "FlowPay Core Payment Operations",
+    "description": "Comprehensive collection for FlowPay Core Payment Operations with all test scenarios. Organized by operation type with clear, understandable test names.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.1.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string",
+      "description": "Base URL for the FlowPay API"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api/v1",
+      "type": "string",
+      "description": "API version prefix"
+    },
+    {
+      "key": "api_key",
+      "value": "pk_live_EPcElqtBUvPJUFV9MpJv3s8RhGwX7nnH9bL2K5tAqZ1DcXmFkN4pV8sW2uR7J6G5",
+      "type": "string",
+      "description": "Development test API key"
+    },
+    {
+      "key": "orange_merchant_key",
+      "value": "your_orange_merchant_key_here",
+      "type": "string",
+      "description": "Orange Money merchant key for testing"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. 🔧 Core API Operations",
+      "item": [
+        {
+          "name": "✅ Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔑 Authentication Test",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. 🟠 Orange Money Web Payment Scenarios",
+      "item": [
+        {
+          "name": "✅ Orange Web Payment Success (237690000001)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Web Payment Success - Test Number: 237690000001');",
+                  "console.log('💡 Use PIN: 4444 to complete this test payment');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000001\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Web Payment Test - Success\",\n  \"returnUrl\": \"{{base_url}}/payment/success\",\n  \"cancelUrl\": \"{{base_url}}/payment/cancel\",\n  \"webhookUrl\": \"{{base_url}}{{api_prefix}}/webhooks/orange\",\n  \"id\": \"orange_web_success_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/web/orange",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "web",
+                "orange"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Orange Web Payment Failed (237690000002)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Web Payment Failed - Test Number: 237690000002');",
+                  "console.log('💡 This test should fail with invalid account error');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000002\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Web Payment Test - Failed\",\n  \"returnUrl\": \"{{base_url}}/payment/success\",\n  \"cancelUrl\": \"{{base_url}}/payment/cancel\",\n  \"webhookUrl\": \"{{base_url}}{{api_prefix}}/webhooks/orange\",\n  \"id\": \"orange_web_failed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/web/orange",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "web",
+                "orange"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Orange Web Payment Expired (237690000003)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Web Payment Expired - Test Number: 237690000003');",
+                  "console.log('💡 This test simulates an expired payment session');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000003\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Web Payment Test - Expired\",\n  \"returnUrl\": \"{{base_url}}/payment/success\",\n  \"cancelUrl\": \"{{base_url}}/payment/cancel\",\n  \"webhookUrl\": \"{{base_url}}{{api_prefix}}/webhooks/orange\",\n  \"id\": \"orange_web_expired_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/web/orange",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "web",
+                "orange"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Orange Web Payment Cancelled (237690000004)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Web Payment Cancelled - Test Number: 237690000004');",
+                  "console.log('💡 User should cancel this payment to test cancellation flow');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000004\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Web Payment Test - Cancelled\",\n  \"returnUrl\": \"{{base_url}}/payment/success\",\n  \"cancelUrl\": \"{{base_url}}/payment/cancel\",\n  \"webhookUrl\": \"{{base_url}}{{api_prefix}}/webhooks/orange\",\n  \"id\": \"orange_web_cancelled_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/web/orange",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "web",
+                "orange"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. 🟠 Orange Money Deposit Scenarios",
+      "item": [
+        {
+          "name": "✅ Orange Deposit Success (237690000005)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Deposit Success - Test Number: 237690000005');",
+                  "console.log('💡 Use PIN: 4444 to complete this deposit test');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000005\",\n  \"amount\": 10000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Deposit Test - Success\",\n  \"id\": \"orange_deposit_success_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Orange Deposit Insufficient Balance (237690000006)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Deposit Insufficient Balance - Test Number: 237690000006');",
+                  "console.log('💡 This test should fail due to insufficient funds');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000006\",\n  \"amount\": 1000000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Deposit Test - Insufficient Balance\",\n  \"id\": \"orange_deposit_insufficient_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ Orange Deposit Invalid Account (237690000007)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Orange Deposit Invalid Account - Test Number: 237690000007');",
+                  "console.log('💡 This test should fail with account not found error');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"orange\",\n  \"accountId\": \"237690000007\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Orange Money Deposit Test - Invalid Account\",\n  \"id\": \"orange_deposit_invalid_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. 🟠 Orange Money Status Check Scenarios",
+      "item": [
+        {
+          "name": "🔍 Check Orange Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/orange_web_success_{{$timestamp}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "orange_web_success_{{$timestamp}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔍 Check Orange Deposit Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits/orange_deposit_success_{{$timestamp}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits",
+                "orange_deposit_success_{{$timestamp}}",
+                "status"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. 🟠 Orange Money Health & Configuration",
+      "item": [
+        {
+          "name": "🏥 Orange Money Provider Health Check",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/providers/orange/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "providers",
+                "orange",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "📊 Orange Money Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/providers/orange/transactions?startDate={{$isoTimestamp}}&endDate={{$isoTimestamp}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "providers",
+                "orange",
+                "transactions"
+              ],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "{{$isoTimestamp}}"
+                },
+                {
+                  "key": "endDate",
+                  "value": "{{$isoTimestamp}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

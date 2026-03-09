@@ -1,0 +1,3818 @@
+{
+  "info": {
+    "name": "FlowPay Core Payment Operations",
+    "description": "Comprehensive collection for FlowPay Core Payment Operations with all test scenarios. Organized by operation type with clear, understandable test names.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string",
+      "description": "Base URL for the FlowPay API"
+    },
+    {
+      "key": "api_prefix",
+      "value": "/api/v1",
+      "type": "string",
+      "description": "API version prefix"
+    },
+    {
+      "key": "api_key",
+      "value": "pk_live_EPcElqtBUvPJUFV9MpJv3s8RhGwX7nnH9bL2K5tAqZ1DcXmFkN4pV8sW2uR7J6G5",
+      "type": "string",
+      "description": "Development test API key"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. 🔧 Core API Operations",
+      "item": [
+        {
+          "name": "✅ Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔑 Authentication Test",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "📊 Payment Statistics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/stats",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "stats"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💰 Balance Aggregation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/balance/aggregated",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "balance",
+                "aggregated"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. 💳 Request-to-Pay Scenarios",
+      "item": [
+        {
+          "name": "✅ Request-to-Pay Success (237600000450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Success - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000450@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_success_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Request-to-Pay Payer Failed (237600000450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Failed - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000450@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_failed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Request-to-Pay Payer Rejected (237600000451)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Rejected - MTN Test: 46733123451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000451@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_rejected_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Request-to-Pay Payer Expired (237600000452)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Expired - MTN Test: 46733123452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000452@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_expired_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ Request-to-Pay Payer Ongoing (237600000453)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Ongoing - MTN Test: 46733123453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000453@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_ongoing_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏸️ Request-to-Pay Payer Delayed (237600000454)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Delayed - MTN Test: 46733123454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000454@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_delayed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ Request-to-Pay Payer Not Found (237600000455)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Not Found - MTN Test: 46733123455');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000455@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_not_found_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Request-to-Pay Payee Not Allowed to Receive (237600000456)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payee Not Allowed to Receive - MTN Test: 46733123456');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000456@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_payee_not_allowed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Request-to-Pay Payer Not Allowed (237600000457)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Payer Not Allowed - MTN Test: 46733123457');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000457@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_payer_not_allowed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🌍 Request-to-Pay Not Allowed Target Environment (237600000458)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Not Allowed Target Environment - MTN Test: 46733123458');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000458@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_target_env_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔗 Request-to-Pay Invalid Callback URL Host (237600000459)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Invalid Callback URL Host - MTN Test: 46733123459');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000459@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_callback_url_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💱 Request-to-Pay Invalid Currency (237600000460)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Invalid Currency - MTN Test: 46733123460');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000460@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_invalid_currency_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⚙️ Request-to-Pay Internal Processing Error (237600000461)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Internal Processing Error - MTN Test: 46733123461');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000461@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_processing_error_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔴 Request-to-Pay Service Unavailable (237600000462)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Service Unavailable - MTN Test: 46733123462');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000462@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_service_unavailable_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💥 Request-to-Pay Could Not Perform Transaction (237600000463)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Request-to-Pay Could Not Perform Transaction - MTN Test: 46733123463');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237600000463@cameroon\",\n  \"to\": \"237670000000@cameroon\",\n  \"amount\": 1000,\n  \"timestamp\": \"{{$isoTimestamp}}\",\n  \"id\": \"rtp_could_not_perform_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. 🏦 Deposit Scenarios",
+      "item": [
+        {
+          "name": "❌ Deposit Payer Failed (237680000450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Failed - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000450@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Failed\",\n  \"id\": \"dep_failed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Deposit Payer Rejected (237680000451)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Rejected - MTN Test: 46733123451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000451@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Rejected\",\n  \"id\": \"dep_rejected_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Deposit Payer Expired (237680000452)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Expired - MTN Test: 46733123452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000452@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Expired\",\n  \"id\": \"dep_expired_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ Deposit Payer Ongoing (237680000453)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Ongoing - MTN Test: 46733123453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000453@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Ongoing\",\n  \"id\": \"dep_ongoing_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏸️ Deposit Payer Delayed (237680000454)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Delayed - MTN Test: 46733123454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000454@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Delayed\",\n  \"id\": \"dep_delayed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ Deposit Payer Not Found (237680000455)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Not Found - MTN Test: 46733123455');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000455@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Not Found\",\n  \"id\": \"dep_not_found_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Deposit Payee Not Allowed to Receive (237680000456)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payee Not Allowed to Receive - MTN Test: 46733123456');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000456@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payee Not Allowed to Receive\",\n  \"id\": \"dep_payee_not_allowed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Deposit Payer Not Allowed (237680000457)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Payer Not Allowed - MTN Test: 46733123457');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000457@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Payer Not Allowed\",\n  \"id\": \"dep_payer_not_allowed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🌍 Deposit Not Allowed Target Environment (237680000458)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Not Allowed Target Environment - MTN Test: 46733123458');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000458@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Not Allowed Target Environment\",\n  \"id\": \"dep_target_env_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔗 Deposit Invalid Callback URL Host (237680000459)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Invalid Callback URL Host - MTN Test: 46733123459');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000459@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Invalid Callback URL Host\",\n  \"id\": \"dep_callback_url_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💱 Deposit Invalid Currency (237680000460)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Invalid Currency - MTN Test: 46733123460');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000460@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Invalid Currency\",\n  \"id\": \"dep_invalid_currency_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⚙️ Deposit Internal Processing Error (237680000461)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Internal Processing Error - MTN Test: 46733123461');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000461@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Internal Processing Error\",\n  \"id\": \"dep_processing_error_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔴 Deposit Service Unavailable (237680000462)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Service Unavailable - MTN Test: 46733123462');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000462@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Service Unavailable\",\n  \"id\": \"dep_service_unavailable_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💥 Deposit Could Not Perform Transaction (237680000463)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Deposit Could Not Perform Transaction - MTN Test: 46733123463');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237680000463@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Deposit - Could Not Perform Transaction\",\n  \"id\": \"dep_could_not_perform_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/deposits",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "deposits"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. 💸 Transfer Scenarios",
+      "item": [
+        {
+          "name": "❌ Transfer Payee Failed (237690000450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Failed - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000450@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Failed\",\n  \"id\": \"txf_failed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Transfer Payee Rejected (237690000451)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Rejected - MTN Test: 46733123451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000451@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Rejected\",\n  \"id\": \"txf_rejected_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Transfer Payee Expired (237690000452)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Expired - MTN Test: 46733123452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000452@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Expired\",\n  \"id\": \"txf_expired_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ Transfer Payee Ongoing (237690000453)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Ongoing - MTN Test: 46733123453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000453@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Ongoing\",\n  \"id\": \"txf_ongoing_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏸️ Transfer Payee Delayed (237690000454)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Delayed - MTN Test: 46733123454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000454@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Delayed\",\n  \"id\": \"txf_delayed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💰 Transfer Not Enough Funds (237690000455)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Not Enough Funds - MTN Test: 46733123455');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000455@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Not Enough Funds\",\n  \"id\": \"txf_not_enough_funds_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Transfer Payer Limit Reached (237690000456)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payer Limit Reached - MTN Test: 46733123456');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000456@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payer Limit Reached\",\n  \"id\": \"txf_payer_limit_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ Transfer Payee Not Found (237690000457)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Not Found - MTN Test: 46733123457');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000457@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Not Found\",\n  \"id\": \"txf_payee_not_found_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Transfer Payee Not Allowed (237690000458)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Payee Not Allowed - MTN Test: 46733123458');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000458@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Payee Not Allowed\",\n  \"id\": \"txf_payee_not_allowed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🌍 Transfer Not Allowed Target Environment (237690000459)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Not Allowed Target Environment - MTN Test: 46733123459');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000459@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Not Allowed Target Environment\",\n  \"id\": \"txf_target_env_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔗 Transfer Invalid Callback URL Host (237690000460)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Invalid Callback URL Host - MTN Test: 46733123460');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000460@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Invalid Callback URL Host\",\n  \"id\": \"txf_callback_url_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💱 Transfer Invalid Currency (237690000461)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Invalid Currency - MTN Test: 46733123461');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000461@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Invalid Currency\",\n  \"id\": \"txf_invalid_currency_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⚙️ Transfer Internal Processing Error (237690000462)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Internal Processing Error - MTN Test: 46733123462');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000462@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Internal Processing Error\",\n  \"id\": \"txf_processing_error_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔴 Transfer Service Unavailable (237690000463)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Transfer Service Unavailable - MTN Test: 46733123463');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"from\": \"237670000000@cameroon\",\n  \"to\": \"237690000463@cameroon\",\n  \"amount\": 2000,\n  \"description\": \"Test Transfer - Service Unavailable\",\n  \"id\": \"txf_service_unavailable_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/transfers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "transfers"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. 💳 Payment PreApproval Scenarios",
+      "item": [
+        {
+          "name": "❌ Payment PreApproval Payer Failed (237670000010)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Payment PreApproval Payer Failed - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"237670000010@cameroon\",\n  \"amount\": 5000,\n  \"description\": \"Test Payment PreApproval - Payer Failed\",\n  \"preApproval\": true,\n  \"id\": \"pay_pre_failed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Payment PreApproval Payee Declined (237670000011)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Payment PreApproval Payee Declined - MTN Test: 46733123451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"237670000011@cameroon\",\n  \"amount\": 5000,\n  \"description\": \"Test Payment PreApproval - Payee Declined\",\n  \"preApproval\": true,\n  \"id\": \"pay_pre_declined_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Payment PreApproval Timeout (237670000012)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Payment PreApproval Timeout - MTN Test: 46733123452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"237670000012@cameroon\",\n  \"amount\": 5000,\n  \"description\": \"Test Payment PreApproval - Timeout\",\n  \"preApproval\": true,\n  \"id\": \"pay_pre_timeout_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Payment PreApproval Expired (237670000013)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Payment PreApproval Expired - MTN Test: 46733123453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"237670000013@cameroon\",\n  \"amount\": 5000,\n  \"description\": \"Test Payment PreApproval - Expired\",\n  \"preApproval\": true,\n  \"id\": \"pay_pre_expired_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ Payment PreApproval Pending (237670000014)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Payment PreApproval Pending - MTN Test: 46733123454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"237670000014@cameroon\",\n  \"amount\": 5000,\n  \"description\": \"Test Payment PreApproval - Pending\",\n  \"preApproval\": true,\n  \"id\": \"pay_pre_pending_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. 🎯 Dedicated PreApproval API Scenarios",
+      "item": [
+        {
+          "name": "❌ PreApproval Payer Failed (237700000450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Failed - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000450@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Failed\",\n  \"validityTime\": 300,\n  \"id\": \"pre_failed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ PreApproval Payer Rejected (237700000451)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Rejected - MTN Test: 46733123451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000451@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Rejected\",\n  \"validityTime\": 300,\n  \"id\": \"pre_rejected_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ PreApproval Payer Expired (237700000452)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Expired - MTN Test: 46733123452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000452@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Expired\",\n  \"validityTime\": 300,\n  \"id\": \"pre_expired_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ PreApproval Payer Ongoing (237700000453)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Ongoing - MTN Test: 46733123453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000453@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Ongoing\",\n  \"validityTime\": 300,\n  \"id\": \"pre_ongoing_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏸️ PreApproval Payer Delayed (237700000454)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Delayed - MTN Test: 46733123454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000454@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Delayed\",\n  \"validityTime\": 300,\n  \"id\": \"pre_delayed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ PreApproval Payer Not Found (237700000455)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Not Found - MTN Test: 46733123455');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000455@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Not Found\",\n  \"validityTime\": 300,\n  \"id\": \"pre_not_found_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 PreApproval Payer Not Allowed (237700000456)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Payer Not Allowed - MTN Test: 46733123456');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000456@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Payer Not Allowed\",\n  \"validityTime\": 300,\n  \"id\": \"pre_not_allowed_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🌍 PreApproval Not Allowed Target Environment (237700000457)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Not Allowed Target Environment - MTN Test: 46733123457');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000457@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Not Allowed Target Environment\",\n  \"validityTime\": 300,\n  \"id\": \"pre_target_env_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔗 PreApproval Invalid Callback URL Host (237700000458)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Invalid Callback URL Host - MTN Test: 46733123458');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000458@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Invalid Callback URL Host\",\n  \"validityTime\": 300,\n  \"id\": \"pre_callback_url_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "💱 PreApproval Invalid Currency (237700000459)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Invalid Currency - MTN Test: 46733123459');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000459@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Invalid Currency\",\n  \"validityTime\": 300,\n  \"id\": \"pre_invalid_currency_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⚙️ PreApproval Internal Processing Error (237700000460)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Internal Processing Error - MTN Test: 46733123460');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000460@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Internal Processing Error\",\n  \"validityTime\": 300,\n  \"id\": \"pre_processing_error_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🔴 PreApproval Service Unavailable (237700000461)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing PreApproval Service Unavailable - MTN Test: 46733123461');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"payerPhone\": \"237700000461@cameroon\",\n  \"payerMessage\": \"Test PreApproval - Service Unavailable\",\n  \"validityTime\": 300,\n  \"id\": \"pre_service_unavailable_{{$timestamp}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/preapprovals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "preapprovals"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. 🏧 Withdrawal Scenarios",
+      "item": [
+        {
+          "name": "✅ Withdrawal Success (FlowPay: 237710000400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Success - FlowPay Test: 237710000400');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000400@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Success\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "✅ Withdrawal Success | MTN (46733123400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Success - MTN Test: 46733123400');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123400@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Success\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Withdrawal Payer Failed (FlowPay: 237710000450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Failed - FlowPay Test: 237710000450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000450@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Failed\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Withdrawal Payer Failed | MTN (46733123450)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Failed - MTN Test: 46733123450');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123450@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Failed\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Withdrawal Payer Rejected (FlowPay: 237710000451)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Rejected - FlowPay Test: 237710000451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000451@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Rejected\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❌ Withdrawal Payer Rejected | MTN (46733123451)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Rejected - MTN Test: 46733123451');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123451@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Rejected\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Withdrawal Payer Expired (FlowPay: 237710000452)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Expired - FlowPay Test: 237710000452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000452@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Expired\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏰ Withdrawal Payer Expired | MTN (46733123452)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Expired - MTN Test: 46733123452');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123452@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Expired\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ Withdrawal Payer Ongoing (FlowPay: 237710000453)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Ongoing - FlowPay Test: 237710000453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000453@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Ongoing\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏳ Withdrawal Payer Ongoing | MTN (46733123453)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Ongoing - MTN Test: 46733123453');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123453@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Ongoing\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏸️ Withdrawal Payer Delayed (FlowPay: 237710000454)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Delayed - FlowPay Test: 237710000454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000454@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Delayed\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "⏸️ Withdrawal Payer Delayed | MTN (46733123454)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Delayed - MTN Test: 46733123454');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123454@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Delayed\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ Withdrawal Payer Not Found (FlowPay: 237710000455)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Not Found - FlowPay Test: 237710000455');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000455@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Not Found\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "❓ Withdrawal Payer Not Found | MTN (46733123455)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Not Found - MTN Test: 46733123455');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123455@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Not Found\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Withdrawal Payer Not Allowed (FlowPay: 237710000457)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Not Allowed - FlowPay Test: 237710000457');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000457@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Not Allowed\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🚫 Withdrawal Payer Not Allowed | MTN (46733123457)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Payer Not Allowed - MTN Test: 46733123457');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123457@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Payer Not Allowed\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🌍 Withdrawal Not Allowed Target Environment (FlowPay: 237710000458)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Not Allowed Target Environment - FlowPay Test: 237710000458');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"237710000458@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Not Allowed Target Environment\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        },
+        {
+          "name": "🌍 Withdrawal Not Allowed Target Environment | MTN (46733123458)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "console.log('🧪 Testing Withdrawal Not Allowed Target Environment - MTN Test: 46733123458');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accountId\": \"46733123458@cameroon\",\n  \"amount\": 5000,\n  \"currency\": \"XAF\",\n  \"description\": \"Test Withdrawal - Not Allowed Target Environment\",\n  \"provider\": \"MTN\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/withdrawals",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "withdrawals"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. 🔄 Refund Transaction Scenarios",
+      "item": [
+        {
+          "name": "✅ Refund Transaction Success (237650000000) || 46733999999",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Success scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000000@cameroon || MTN Test Number: 46733999999\nScenario: REFUND_TRANSACTION_SUCCESS\nExpected: Refund should complete successfully"
+          }
+        },
+        {
+          "name": "❌ Refund Transaction Not Found (237650000001) || 46733999999",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Not Found scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000001@cameroon || MTN Test Number: 46733999999\nScenario: REFUND_TRANSACTION_NOT_FOUND\nExpected: Refund should fail with 'transaction not found' error"
+          }
+        },
+        {
+          "name": "❌ Refund Transaction Failed (237650000002) || 46733123450",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Failed scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000002@cameroon || MTN Test Number: 46733123450\nScenario: REFUND_TRANSACTION_FAILED\nExpected: Refund should fail with general failure error"
+          }
+        },
+        {
+          "name": "❌ Refund Transaction Rejected (237650000003) || 46733123451",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Rejected scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000003@cameroon || MTN Test Number: 46733123451\nScenario: REFUND_TRANSACTION_REJECTED\nExpected: Refund should be rejected by provider"
+          }
+        },
+        {
+          "name": "⏰ Refund Transaction Expired (237650000004) || 46733123452",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Expired scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000004@cameroon || MTN Test Number: 46733123452\nScenario: REFUND_TRANSACTION_EXPIRED\nExpected: Refund should fail due to expiration"
+          }
+        },
+        {
+          "name": "⏳ Refund Transaction Ongoing (237650000005) || 46733123453",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Ongoing scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000005@cameroon || MTN Test Number: 46733123453\nScenario: REFUND_TRANSACTION_ONGOING\nExpected: Refund should remain in processing state"
+          }
+        },
+        {
+          "name": "⏸️ Refund Transaction Delayed (237650000006) || 46733123454",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Delayed scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000006@cameroon || MTN Test Number: 46733123454\nScenario: REFUND_TRANSACTION_DELAYED\nExpected: Refund should be delayed but eventually complete"
+          }
+        },
+        {
+          "name": "🚫 Refund Transaction Not Allowed (237650000007) || 46733123457",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Not Allowed scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000007@cameroon || MTN Test Number: 46733123457\nScenario: REFUND_TRANSACTION_NOT_ALLOWED\nExpected: Refund should be rejected as not allowed"
+          }
+        },
+        {
+          "name": "🌍 Refund Transaction Not Allowed Target Environment (237650000008) || 46733123458",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Target Environment scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000008@cameroon || MTN Test Number: 46733123458\nScenario: REFUND_TRANSACTION_NOT_ALLOWED_TARGET_ENVIRONMENT\nExpected: Refund should fail due to target environment restrictions"
+          }
+        },
+        {
+          "name": "🔗 Refund Transaction Invalid Callback URL Host (237650000009) || 46733123459",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Invalid Callback URL scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000009@cameroon || MTN Test Number: 46733123459\nScenario: REFUND_TRANSACTION_INVALID_CALLBACK_URL_HOST\nExpected: Refund should fail due to invalid callback URL"
+          }
+        },
+        {
+          "name": "💱 Refund Transaction Invalid Currency (237650000010) || 46733123460",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Invalid Currency scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000010@cameroon || MTN Test Number: 46733123460\nScenario: REFUND_TRANSACTION_INVALID_CURRENCY\nExpected: Refund should fail due to invalid currency"
+          }
+        },
+        {
+          "name": "⚙️ Refund Transaction Internal Processing Error (237650000011) || 46733123461",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Internal Processing Error scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000011@cameroon || MTN Test Number: 46733123461\nScenario: REFUND_TRANSACTION_INTERNAL_PROCESSING_ERROR\nExpected: Refund should fail due to internal processing error"
+          }
+        },
+        {
+          "name": "🔴 Refund Transaction Service Unavailable (237650000012) || 46733123462",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Service Unavailable scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000012@cameroon || MTN Test Number: 46733123462\nScenario: REFUND_TRANSACTION_SERVICE_UNAVAILABLE\nExpected: Refund should fail due to service unavailability"
+          }
+        },
+        {
+          "name": "💥 Refund Transaction Could Not Perform Transaction (237650000013) || 46733123463",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 500,\n  \"reason\": \"Customer requested refund - Could Not Perform Transaction scenario\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refund",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ]
+            },
+            "description": "FlowPay Number: 237650000013@cameroon || MTN Test Number: 46733123463\nScenario: REFUND_TRANSACTION_COULD_NOT_PERFORM_TRANSACTION\nExpected: Refund should fail as transaction could not be performed"
+          }
+        },
+        {
+          "name": "📋 Get Refund Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refunds/{{refund_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refunds",
+                "{{refund_id}}"
+              ]
+            },
+            "description": "Get the status of a specific refund transaction"
+          }
+        },
+        {
+          "name": "📋 List All Refunds for Payment",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-api-key",
+                "value": "{{api_key}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}{{api_prefix}}/payments/{{payment_id}}/refunds",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "{{api_prefix}}",
+                "payments",
+                "{{payment_id}}",
+                "refunds"
+              ]
+            },
+            "description": "List all refunds for a specific payment"
+          }
+        }
+      ]
+    }
+  ]
+}

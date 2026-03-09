@@ -1,0 +1,475 @@
+{
+  "info": {
+    "_postman_id": "fp-mtn-sandbox-setup-001",
+    "name": "01 - MTN Sandbox Setup",
+    "description": "Setup MTN MoMo sandbox credentials.\n\nRun these requests IN ORDER before testing any other MTN or FlowPay APIs.\n\nSteps:\n1. Get subscription keys from momodeveloper.mtn.com for Collection, Disbursement, and Remittance products\n2. Set MTN_COLLECTION_SUBSCRIPTION_KEY, MTN_DISBURSEMENT_SUBSCRIPTION_KEY, MTN_REMITTANCE_SUBSCRIPTION_KEY in environment\n3. Run 'Create API User' for each product\n4. Run 'Create API Key' for each product\n5. Run 'Generate Access Token' for each product\n\nAfter running this collection, all MTN_*_TOKEN variables will be populated automatically.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Collection Product Setup",
+      "item": [
+        {
+          "name": "Create API User (Collection)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "const uuid = require('uuid') ? require('uuid').v4() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {",
+                  "    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);",
+                  "    return v.toString(16);",
+                  "});",
+                  "pm.environment.set('MTN_API_USER', uuid);",
+                  "console.log('Generated MTN_API_USER:', uuid);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 - API User Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "pm.test('MTN_API_USER saved to environment', function () {",
+                  "    pm.expect(pm.environment.get('MTN_API_USER')).to.not.be.empty;",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Reference-Id", "value": "{{MTN_API_USER}}", "description": "UUID for the new API user" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_COLLECTION_SUBSCRIPTION_KEY}}", "description": "Collection product subscription key" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerCallbackHost\": \"{{MTN_PROVIDER_CALLBACK_HOST}}\"\n}"
+            },
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser"]
+            },
+            "description": "Creates an API user in the MTN sandbox. The X-Reference-Id becomes your API User ID.\n\nMTN API: POST /v1_0/apiuser"
+          }
+        },
+        {
+          "name": "Create API Key (Collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 - API Key Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.apiKey) {",
+                  "    pm.environment.set('MTN_API_KEY', jsonData.apiKey);",
+                  "    console.log('MTN_API_KEY saved:', jsonData.apiKey);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_COLLECTION_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser/{{MTN_API_USER}}/apikey",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser", "{{MTN_API_USER}}", "apikey"]
+            },
+            "description": "Creates an API key for the API user. Save the returned apiKey.\n\nMTN API: POST /v1_0/apiuser/{X-Reference-Id}/apikey"
+          }
+        },
+        {
+          "name": "Get API User Info (Collection)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - API User Found', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "console.log('API User Info:', pm.response.text());"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_COLLECTION_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser/{{MTN_API_USER}}",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser", "{{MTN_API_USER}}"]
+            },
+            "description": "Verify the API user was created successfully.\n\nMTN API: GET /v1_0/apiuser/{X-Reference-Id}"
+          }
+        }
+      ],
+      "description": "Create API user and key for the MTN Collection product (Request-to-Pay, Withdrawals, Invoices, Pre-Approvals)."
+    },
+    {
+      "name": "2. Disbursement Product Setup",
+      "item": [
+        {
+          "name": "Create API User (Disbursement)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {",
+                  "    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);",
+                  "    return v.toString(16);",
+                  "});",
+                  "pm.environment.set('MTN_DISBURSEMENT_API_USER', uuid);",
+                  "console.log('Generated MTN_DISBURSEMENT_API_USER:', uuid);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 - API User Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Reference-Id", "value": "{{MTN_DISBURSEMENT_API_USER}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerCallbackHost\": \"{{MTN_PROVIDER_CALLBACK_HOST}}\"\n}"
+            },
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser"]
+            }
+          }
+        },
+        {
+          "name": "Create API Key (Disbursement)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 - API Key Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.apiKey) {",
+                  "    pm.environment.set('MTN_DISBURSEMENT_API_KEY', jsonData.apiKey);",
+                  "    console.log('MTN_DISBURSEMENT_API_KEY saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser/{{MTN_DISBURSEMENT_API_USER}}/apikey",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser", "{{MTN_DISBURSEMENT_API_USER}}", "apikey"]
+            }
+          }
+        },
+        {
+          "name": "Get API User Info (Disbursement)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser/{{MTN_DISBURSEMENT_API_USER}}",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser", "{{MTN_DISBURSEMENT_API_USER}}"]
+            }
+          }
+        }
+      ],
+      "description": "Create API user and key for the MTN Disbursement product (Transfers, Deposits, Refunds)."
+    },
+    {
+      "name": "3. Remittance Product Setup",
+      "item": [
+        {
+          "name": "Create API User (Remittance)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {",
+                  "    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);",
+                  "    return v.toString(16);",
+                  "});",
+                  "pm.environment.set('MTN_REMITTANCE_API_USER', uuid);",
+                  "console.log('Generated MTN_REMITTANCE_API_USER:', uuid);"
+                ],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 - API User Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "X-Reference-Id", "value": "{{MTN_REMITTANCE_API_USER}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"providerCallbackHost\": \"{{MTN_PROVIDER_CALLBACK_HOST}}\"\n}"
+            },
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser"]
+            }
+          }
+        },
+        {
+          "name": "Create API Key (Remittance)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 201 - API Key Created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.apiKey) {",
+                  "    pm.environment.set('MTN_REMITTANCE_API_KEY', jsonData.apiKey);",
+                  "    console.log('MTN_REMITTANCE_API_KEY saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser/{{MTN_REMITTANCE_API_USER}}/apikey",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser", "{{MTN_REMITTANCE_API_USER}}", "apikey"]
+            }
+          }
+        },
+        {
+          "name": "Get API User Info (Remittance)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_BASE_URL}}/v1_0/apiuser/{{MTN_REMITTANCE_API_USER}}",
+              "host": ["{{MTN_BASE_URL}}"],
+              "path": ["v1_0", "apiuser", "{{MTN_REMITTANCE_API_USER}}"]
+            }
+          }
+        }
+      ],
+      "description": "Create API user and key for the MTN Remittance product (Cash Transfers)."
+    },
+    {
+      "name": "4. Generate Access Tokens",
+      "item": [
+        {
+          "name": "Collection - Create Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Token Created', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.environment.set('MTN_COLLECTION_TOKEN', jsonData.access_token);",
+                  "    console.log('MTN_COLLECTION_TOKEN saved, expires in:', jsonData.expires_in, 'seconds');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{MTN_API_USER}}", "type": "string" },
+                { "key": "password", "value": "{{MTN_API_KEY}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_COLLECTION_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_COLLECTION_URL}}/token/",
+              "host": ["{{MTN_COLLECTION_URL}}"],
+              "path": ["token", ""]
+            },
+            "description": "Generate Bearer token for Collection API.\n\nMTN API: POST /collection/token/"
+          }
+        },
+        {
+          "name": "Disbursement - Create Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Token Created', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.environment.set('MTN_DISBURSEMENT_TOKEN', jsonData.access_token);",
+                  "    console.log('MTN_DISBURSEMENT_TOKEN saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{MTN_DISBURSEMENT_API_USER}}", "type": "string" },
+                { "key": "password", "value": "{{MTN_DISBURSEMENT_API_KEY}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_DISBURSEMENT_URL}}/token/",
+              "host": ["{{MTN_DISBURSEMENT_URL}}"],
+              "path": ["token", ""]
+            },
+            "description": "Generate Bearer token for Disbursement API.\n\nMTN API: POST /disbursement/token/"
+          }
+        },
+        {
+          "name": "Remittance - Create Access Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200 - Token Created', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.environment.set('MTN_REMITTANCE_TOKEN', jsonData.access_token);",
+                  "    console.log('MTN_REMITTANCE_TOKEN saved');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "basic",
+              "basic": [
+                { "key": "username", "value": "{{MTN_REMITTANCE_API_USER}}", "type": "string" },
+                { "key": "password", "value": "{{MTN_REMITTANCE_API_KEY}}", "type": "string" }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": {
+              "raw": "{{MTN_REMITTANCE_URL}}/token/",
+              "host": ["{{MTN_REMITTANCE_URL}}"],
+              "path": ["token", ""]
+            },
+            "description": "Generate Bearer token for Remittance API.\n\nMTN API: POST /remittance/token/"
+          }
+        }
+      ],
+      "description": "Generate access tokens for all three MTN products. Tokens auto-save to environment variables."
+    }
+  ]
+}

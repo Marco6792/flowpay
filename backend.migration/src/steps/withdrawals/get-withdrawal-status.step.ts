@@ -1,0 +1,66 @@
+import { ApiRouteConfig, FlowContext } from 'motia'
+import { z } from 'zod'
+import { withdrawalService } from '../../services/withdrawal.service'
+import { apiKeyAuth } from '../../middleware/auth.middleware'
+import { coreMiddleware } from '../../middlewares/core.middleware'
+
+const paramsSchema = z.object({
+  withdrawId: z.string(),
+})
+
+export const config: ApiRouteConfig = {
+  name: 'GetWithdrawalStatus',
+  flows: ['withdrawals'],
+  type: 'api',
+  path: '/api/v1/withdraw/:withdrawId/status',
+  method: 'GET',
+  emits: [],
+  middleware: [coreMiddleware, apiKeyAuth],
+  description: 'Get live withdrawal status from provider (not cached)',
+}
+
+export const handler = async (req: any, { logger }: FlowContext) => {
+  try {
+    const { withdrawId } = req.params as z.infer<typeof paramsSchema>
+    const apiKeyId = req.apiKey!.id
+
+    const status = await withdrawalService.getWithdrawalStatus(withdrawId, apiKeyId)
+
+    return {
+      status: 200,
+      body: {
+        success: true,
+        data: {
+          withdrawId: status.withdrawId,
+          providerWithdrawId: status.providerWithdrawId,
+          status: status.status,
+          amount: status.amount,
+          fee: status.fee || null,
+          completedAt: status.completedAt,
+          failureReason: status.failureReason || null,
+          financialTransactionId: (status as any).financialTransactionId || null,
+        },
+      },
+    }
+  } catch (error: any) {
+    logger.error('Failed to get withdrawal status', { error: error.message })
+
+    if (error.message === 'Withdrawal not found' || error.message === 'Withdrawal not yet processed by provider') {
+      return {
+        status: 404,
+        body: {
+          success: false,
+          error: error.message,
+        },
+      }
+    }
+
+    return {
+      status: 500,
+      body: {
+        success: false,
+        error: 'Internal server error',
+      },
+    }
+  }
+}

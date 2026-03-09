@@ -1,0 +1,105 @@
+  {
+    "info": {
+      "name": "FlowPay - Get Deposit Status",
+      "_postman_id": "deposit-status-endpoint",
+      "description": "Get the status of a deposit
+  transaction","schema": "https://schema.getpostman.com/json/collect
+  ion/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Get Deposit Status",
+        "request": {
+          "method": "GET",
+          "header": [
+            {
+              "key": "X-API-Key",
+              "value": "{{api_key}}",
+              "type": "text"
+            },
+            {
+              "key": "Content-Type",
+              "value": "application/json",
+              "type": "text"
+            }
+          ],
+          "url": {
+            "raw": "{{base_url}}{{api_prefix}}/deposits/{{d
+  eposit_id
+          }
+        }/status","host": [
+          "{{base_url}}"
+        ],
+        "path": [
+          "deposits",
+          "{{deposit_id}}",
+          "status"
+        ]
+      }
+    },
+    "response": [
+      {
+        "name": "Success Response",
+        "originalRequest": {
+          "method": "GET",
+          "header": [
+            {
+              "key": "X-API-Key",
+              "value": "{{api_key}}"
+            }
+          ],
+          "url": {
+            "raw": "{{base_url}}{{api_prefix}}/deposits
+  /dep_1755154199/status","host": [
+              "{{base_url}}"
+            ],
+            "path": [
+              "deposits",
+              "dep_1755154199",
+              "status"
+            ]
+          }
+        },
+        "status": "OK",
+        "code": 200,
+        "_postman_previewlanguage": "json",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "cookie": [],
+        "body": "{\n    \"success\": true,\n
+  \"data\": {\n        \"depositId\": \"dep_1755154199\",\n
+          \"providerDepositId\":
+  \"2309171f-9844-49a4-b010-34e9ebb1726b\",\n
+  \"status\": \"PENDING\",\n        \"amount\": 5000,\n
+      \"currency\": \"XAF\",\n        \"accountId\":
+  \"237680000000\",\n        \"fee\": null,\n
+  \"completedAt\": null,\n        \"failureReason\":null,\n        \"financialTransactionId\": null,\n
+   \"lastUpdated\": \"2025-08-14T07:10:00.000Z\",\n
+  \"cached\": false\n    }\n}"
+      }
+    ]
+  }
+],
+"variable": [
+  {
+    "key": "base_url",
+    "value": "http://localhost:3000"
+  },
+  {
+    "key": "api_prefix",
+    "value": "/api/v1"
+  },
+  {
+    "key": "api_key",
+    "value": "your-api-key-here"
+  },
+  {
+    "key": "deposit_id",
+    "value": "dep_1755154199"
+  }
+]
+}

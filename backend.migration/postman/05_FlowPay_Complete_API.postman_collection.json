@@ -1,0 +1,667 @@
+{
+  "info": {
+    "_postman_id": "fp-complete-api-005",
+    "name": "05 - FlowPay Complete API",
+    "description": "Complete FlowPay API collection for testing all backend endpoints.\n\nScenario Mapping (FlowPay → MTN):\n- FlowPay Payments → MTN Collection RequestToPay\n- FlowPay Transfers → MTN Disbursement Transfer\n- FlowPay Deposits → MTN Disbursement Deposit\n- FlowPay Withdrawals → MTN Collection RequestToWithdraw\n- FlowPay Refunds → MTN Disbursement Refund\n- FlowPay Invoices → MTN Collection Invoice\n- FlowPay Pre-Approvals → MTN Collection PreApproval\n- FlowPay Consent → MTN OAuth2 bc-authorize\n- FlowPay Remittance → MTN Remittance CashTransfer\n\nRequires: FlowPay backend running at {{FLOWPAY_BASE_URL}}",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{FLOWPAY_BASE_URL}}/health", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["health"] } }
+        },
+        {
+          "name": "Ready Check",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "url": { "raw": "{{FLOWPAY_BASE_URL}}/health/ready", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["health", "ready"] } }
+        }
+      ]
+    },
+    {
+      "name": "2. Authentication",
+      "item": [
+        {
+          "name": "Register Merchant",
+          "event": [{ "listen": "test", "script": { "exec": ["var code = pm.response.code;", "pm.test('Status 201 or 200', function () { pm.expect(code).to.be.oneOf([200, 201]); });", "var data = pm.response.json();", "if (data.token) pm.environment.set('FLOWPAY_JWT_TOKEN', data.token);", "if (data.user && data.user.id) pm.environment.set('MERCHANT_ID', data.user.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{MERCHANT_USERNAME}}\",\n  \"password\": \"{{MERCHANT_PASSWORD}}\",\n  \"email\": \"test@flowpay.com\",\n  \"businessName\": \"Test Merchant\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/auth/register", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["auth", "register"] }
+          }
+        },
+        {
+          "name": "Login Merchant",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "if (data.token) pm.environment.set('FLOWPAY_JWT_TOKEN', data.token);", "if (data.user && data.user.id) pm.environment.set('MERCHANT_ID', data.user.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{MERCHANT_USERNAME}}\",\n  \"password\": \"{{MERCHANT_PASSWORD}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/auth/login", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["auth", "login"] }
+          }
+        },
+        {
+          "name": "Create API Key",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 201', function () { pm.response.to.have.status(201); });", "var data = pm.response.json();", "if (data.key) pm.environment.set('FLOWPAY_API_KEY', data.key);", "if (data.id) pm.environment.set('API_KEY_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test API Key\",\n  \"permissions\": [\"payments\", \"transfers\", \"balance\"]\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/auth/api-keys", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["auth", "api-keys"] }
+          }
+        },
+        {
+          "name": "List API Keys",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/auth/api-keys", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["auth", "api-keys"] }
+          }
+        },
+        {
+          "name": "Revoke API Key",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/auth/api-keys/{{API_KEY_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["auth", "api-keys", "{{API_KEY_ID}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Admin",
+      "item": [
+        {
+          "name": "Register Admin",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.token) pm.environment.set('FLOWPAY_ADMIN_TOKEN', data.token);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{ADMIN_USERNAME}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\",\n  \"email\": \"admin@flowpay.com\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/auth/register", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "auth", "register"] }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "if (data.token) pm.environment.set('FLOWPAY_ADMIN_TOKEN', data.token);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"username\": \"{{ADMIN_USERNAME}}\",\n  \"password\": \"{{ADMIN_PASSWORD}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/auth/login", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "auth", "login"] }
+          }
+        },
+        {
+          "name": "Get Current Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/auth/me", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "auth", "me"] }
+          }
+        },
+        {
+          "name": "Create Fee Structure",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('FEE_STRUCTURE_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Standard Fee\",\n  \"type\": \"percentage\",\n  \"value\": 2.5,\n  \"minAmount\": 0,\n  \"maxAmount\": 1000000,\n  \"currency\": \"{{TEST_CURRENCY}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/fees", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "fees"] }
+          }
+        },
+        {
+          "name": "List Fee Structures",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/fees", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "fees"] }
+          }
+        },
+        {
+          "name": "Update Fee Structure",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"value\": 3.0\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/fees/{{FEE_STRUCTURE_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "fees", "{{FEE_STRUCTURE_ID}}"] }
+          }
+        },
+        {
+          "name": "Assign Fee to Merchant",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"merchantId\": \"{{MERCHANT_ID}}\",\n  \"feeStructureId\": \"{{FEE_STRUCTURE_ID}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/fees/assign", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "fees", "assign"] }
+          }
+        },
+        {
+          "name": "Calculate Fee",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/fees/calculate?amount={{TEST_AMOUNT}}&merchantId={{MERCHANT_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "fees", "calculate"], "query": [{ "key": "amount", "value": "{{TEST_AMOUNT}}" }, { "key": "merchantId", "value": "{{MERCHANT_ID}}" }] }
+          }
+        },
+        {
+          "name": "Get Revenue Report",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_ADMIN_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/admin/fees/revenue", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["admin", "fees", "revenue"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Payments (→ MTN Collection: RequestToPay)",
+      "description": "FlowPay payment endpoints.\n\nMTN Scenario: POST /collection/v1_0/requesttopay\nFlowPay Scenario: POST /api/v1/payments",
+      "item": [
+        {
+          "name": "Create Payment (MTN)",
+          "event": [{ "listen": "test", "script": { "exec": ["var code = pm.response.code;", "pm.test('Status 201 or 202', function () { pm.expect(code).to.be.oneOf([200, 201, 202]); });", "var data = pm.response.json();", "if (data.id) pm.environment.set('PAYMENT_ID', data.id);", "if (data.transactionId) pm.environment.set('PAYMENT_ID', data.transactionId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-pay-{{$timestamp}}\",\n  \"payerMessage\": \"FlowPay payment test\",\n  \"payeeNote\": \"Test payment\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments"] },
+            "description": "Create payment via FlowPay.\n\nFlowPay: POST /payments\nMTN: POST /collection/v1_0/requesttopay"
+          }
+        },
+        {
+          "name": "Create Payment V2",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('PAYMENT_ID', data.id);", "if (data.transactionId) pm.environment.set('PAYMENT_ID', data.transactionId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-payv2-{{$timestamp}}\",\n  \"payerMessage\": \"FlowPay V2 payment\",\n  \"payeeNote\": \"V2 test\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/v2", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "v2"] },
+            "description": "FlowPay: POST /payments/v2\nMTN: POST /collection/v2_0/payment"
+          }
+        },
+        {
+          "name": "Get Payment",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}"] },
+            "description": "FlowPay: GET /payments/{id}\nMTN: GET /collection/v1_0/requesttopay/{referenceId}"
+          }
+        },
+        {
+          "name": "Get Payment Status V2",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}", "status"] },
+            "description": "FlowPay: GET /payments/{id}/status\nMTN: GET /collection/v2_0/payment/{referenceId}"
+          }
+        },
+        {
+          "name": "List Payments",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments"] }
+          }
+        },
+        {
+          "name": "Get Payment Stats",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/stats", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "stats"] }
+          }
+        },
+        {
+          "name": "Send Notification",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"message\": \"Your payment is confirmed. Thank you!\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}/notify", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}", "notify"] },
+            "description": "FlowPay: POST /payments/{id}/notify\nMTN: POST /collection/v1_0/requesttopay/{ref}/deliverynotification"
+          }
+        },
+        {
+          "name": "Cancel Payment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Refunds (→ MTN Disbursement: Refund)",
+      "description": "FlowPay refund endpoints.\n\nMTN Scenario: POST /disbursement/v1_0/refund\nFlowPay Scenario: POST /api/v1/payments/{id}/refund",
+      "item": [
+        {
+          "name": "Create Refund",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('REFUND_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"reason\": \"Customer requested refund\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}/refund", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}", "refund"] }
+          }
+        },
+        {
+          "name": "Create Refund V2",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"reason\": \"Customer requested refund V2\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}/refund/v2", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}", "refund", "v2"] }
+          }
+        },
+        {
+          "name": "Get Refund Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/{{PAYMENT_ID}}/refund/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "{{PAYMENT_ID}}", "refund", "status"] }
+          }
+        },
+        {
+          "name": "List All Refunds",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/payments/refunds", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["payments", "refunds"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Transfers (→ MTN Disbursement: Transfer)",
+      "description": "FlowPay transfer endpoints.\n\nMTN Scenario: POST /disbursement/v1_0/transfer\nFlowPay Scenario: POST /api/v1/transfers",
+      "item": [
+        {
+          "name": "Create Transfer",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('TRANSFER_ID', data.id);", "if (data.transferId) pm.environment.set('TRANSFER_ID', data.transferId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-transfer-{{$timestamp}}\",\n  \"payerMessage\": \"FlowPay transfer\",\n  \"payeeNote\": \"Transfer from FlowPay\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/transfers", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["transfers"] }
+          }
+        },
+        {
+          "name": "Get Transfer",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/transfers/{{TRANSFER_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["transfers", "{{TRANSFER_ID}}"] }
+          }
+        },
+        {
+          "name": "Get Transfer Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/transfers/{{TRANSFER_ID}}/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["transfers", "{{TRANSFER_ID}}", "status"] }
+          }
+        },
+        {
+          "name": "List Transfers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/transfers", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["transfers"] }
+          }
+        },
+        {
+          "name": "Validate Account",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/transfers/validate?phoneNumber={{TEST_MSISDN}}&provider=mtn", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["transfers", "validate"], "query": [{ "key": "phoneNumber", "value": "{{TEST_MSISDN}}" }, { "key": "provider", "value": "mtn" }] },
+            "description": "FlowPay: GET /transfers/validate\nMTN: GET /accountholder/msisdn/{id}/active"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Deposits (→ MTN Disbursement: Deposit)",
+      "description": "FlowPay deposit endpoints.\n\nMTN Scenario: POST /disbursement/v1_0/deposit\nFlowPay Scenario: POST /api/v1/deposits",
+      "item": [
+        {
+          "name": "Create Deposit",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('DEPOSIT_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-deposit-{{$timestamp}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/deposits", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["deposits"] }
+          }
+        },
+        {
+          "name": "Create Deposit V2",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('DEPOSIT_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-deposit-v2-{{$timestamp}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/deposits/v2", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["deposits", "v2"] }
+          }
+        },
+        {
+          "name": "Get Deposit Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/deposits/{{DEPOSIT_ID}}/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["deposits", "{{DEPOSIT_ID}}", "status"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Withdrawals (→ MTN Collection: RequestToWithdraw)",
+      "description": "FlowPay withdrawal endpoints.\n\nMTN Scenario: POST /collection/v1_0/requesttowithdraw\nFlowPay Scenario: POST /api/v1/withdrawals",
+      "item": [
+        {
+          "name": "Create Withdrawal",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('WITHDRAWAL_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-withdraw-{{$timestamp}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/withdrawals", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["withdrawals"] }
+          }
+        },
+        {
+          "name": "Create Withdrawal V2",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('WITHDRAWAL_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-withdraw-v2-{{$timestamp}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/withdrawals/v2", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["withdrawals", "v2"] }
+          }
+        },
+        {
+          "name": "Get Withdrawal",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/withdrawals/{{WITHDRAWAL_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["withdrawals", "{{WITHDRAWAL_ID}}"] }
+          }
+        },
+        {
+          "name": "Get Withdrawal Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/withdrawals/{{WITHDRAWAL_ID}}/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["withdrawals", "{{WITHDRAWAL_ID}}", "status"] }
+          }
+        },
+        {
+          "name": "List Withdrawals",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/withdrawals", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["withdrawals"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Balance (→ MTN: GetAccountBalance)",
+      "item": [
+        {
+          "name": "Get Aggregated Balance",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance"] },
+            "description": "FlowPay: GET /balance\nMTN: GET /v1_0/account/balance (aggregated across products)"
+          }
+        },
+        {
+          "name": "Get Balance by Currency",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance/{{TEST_CURRENCY}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance", "{{TEST_CURRENCY}}"] }
+          }
+        },
+        {
+          "name": "Get Provider Balance (MTN)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance/provider/mtn", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance", "provider", "mtn"] }
+          }
+        },
+        {
+          "name": "Get All Provider Balances",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance/providers", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance", "providers"] }
+          }
+        },
+        {
+          "name": "Refresh Balance",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance/refresh", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance", "refresh"] }
+          }
+        },
+        {
+          "name": "Get Wallet Balances",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance/wallets", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance", "wallets"] }
+          }
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/balance/transactions", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["balance", "transactions"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Consent / OAuth2 (→ MTN: bc-authorize)",
+      "description": "FlowPay consent management.\n\nMTN Scenario: POST /v1_0/bc-authorize + POST /oauth2/token/\nFlowPay Scenario: POST /api/v1/consent",
+      "item": [
+        {
+          "name": "Create Consent",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('CONSENT_ID', data.id);", "if (data.authReqId) pm.environment.set('MTN_AUTH_REQ_ID', data.authReqId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"scope\": \"profile\",\n  \"accessType\": \"offline\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent"] }
+          }
+        },
+        {
+          "name": "Create Account Access Consent",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent/account-access", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent", "account-access"] }
+          }
+        },
+        {
+          "name": "Get Consent Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"authReqId\": \"{{MTN_AUTH_REQ_ID}}\",\n  \"provider\": \"mtn\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent/token", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent", "token"] },
+            "description": "FlowPay: POST /consent/token\nMTN: POST /oauth2/token/ (grant_type=urn:openid:params:grant-type:ciba)"
+          }
+        },
+        {
+          "name": "Refresh Consent Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{MTN_REFRESH_TOKEN}}\",\n  \"provider\": \"mtn\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent/refresh", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent", "refresh"] }
+          }
+        },
+        {
+          "name": "Get User Info (with Consent)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent/userinfo", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent", "userinfo"] },
+            "description": "FlowPay: GET /consent/userinfo\nMTN: GET /oauth2/v1_0/userinfo"
+          }
+        },
+        {
+          "name": "Get Basic User Info",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent/basicuserinfo/{{TEST_MSISDN}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent", "basicuserinfo", "{{TEST_MSISDN}}"] },
+            "description": "FlowPay: GET /consent/basicuserinfo/{msisdn}\nMTN: GET /accountholder/MSISDN/{id}/basicuserinfo"
+          }
+        },
+        {
+          "name": "Revoke Consent",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }],
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/consent/{{CONSENT_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["consent", "{{CONSENT_ID}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Pre-Approvals (→ MTN Collection: PreApproval)",
+      "item": [
+        {
+          "name": "Create Pre-Approval",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('PREAPPROVAL_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"payerMessage\": \"Authorize recurring payments\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/preapprovals", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["preapprovals"] }
+          }
+        },
+        {
+          "name": "List Pre-Approvals",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/preapprovals", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["preapprovals"] } }
+        },
+        {
+          "name": "Get Pre-Approval",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/preapprovals/{{PREAPPROVAL_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["preapprovals", "{{PREAPPROVAL_ID}}"] } }
+        },
+        {
+          "name": "Get Pre-Approval Status",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/preapprovals/{{PREAPPROVAL_ID}}/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["preapprovals", "{{PREAPPROVAL_ID}}", "status"] } }
+        },
+        {
+          "name": "Cancel Pre-Approval",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/preapprovals/{{PREAPPROVAL_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["preapprovals", "{{PREAPPROVAL_ID}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "12. Webhooks",
+      "item": [
+        {
+          "name": "Configure Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"url\": \"{{WEBHOOK_URL}}\",\n  \"events\": [\"payment.completed\", \"payment.failed\", \"transfer.completed\", \"transfer.failed\", \"refund.completed\", \"deposit.completed\", \"withdrawal.completed\"],\n  \"secret\": \"my-webhook-secret\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/configure", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "configure"] }
+          }
+        },
+        {
+          "name": "Get Webhook Status",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/status", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "status"] } }
+        },
+        {
+          "name": "Test Webhook",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"event\": \"payment.completed\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/test", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "test"] }
+          }
+        },
+        {
+          "name": "List Webhook Deliveries",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (Array.isArray(data) && data.length > 0) pm.environment.set('WEBHOOK_DELIVERY_ID', data[0].id);", "if (data.deliveries && data.deliveries.length > 0) pm.environment.set('WEBHOOK_DELIVERY_ID', data.deliveries[0].id);"], "type": "text/javascript" } }],
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/deliveries", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "deliveries"] } }
+        },
+        {
+          "name": "Get Webhook Delivery",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/deliveries/{{WEBHOOK_DELIVERY_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "deliveries", "{{WEBHOOK_DELIVERY_ID}}"] } }
+        },
+        {
+          "name": "Replay Webhook Delivery",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/deliveries/{{WEBHOOK_DELIVERY_ID}}/replay", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "deliveries", "{{WEBHOOK_DELIVERY_ID}}", "replay"] } }
+        },
+        {
+          "name": "Retry Failed Webhooks",
+          "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/webhooks/retry", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["webhooks", "retry"] } }
+        }
+      ]
+    },
+    {
+      "name": "13. Invoices (→ MTN Collection: Invoice)",
+      "item": [
+        {
+          "name": "Create Invoice",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('INVOICE_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-inv-{{$timestamp}}\",\n  \"description\": \"Test invoice\",\n  \"validityDuration\": 3600\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/invoices", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["invoices"] }
+          }
+        },
+        {
+          "name": "Get Invoice Status",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/invoices/{{INVOICE_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["invoices", "{{INVOICE_ID}}"] } }
+        },
+        {
+          "name": "Cancel Invoice",
+          "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/invoices/{{INVOICE_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["invoices", "{{INVOICE_ID}}"] } }
+        }
+      ]
+    },
+    {
+      "name": "14. Remittance / Cash Transfer (→ MTN Remittance)",
+      "item": [
+        {
+          "name": "Create Cash Transfer",
+          "event": [{ "listen": "test", "script": { "exec": ["var data = pm.response.json();", "if (data.id) pm.environment.set('CASH_TRANSFER_ID', data.id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }, { "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": {{TEST_AMOUNT}},\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"phoneNumber\": \"{{TEST_MSISDN}}\",\n  \"provider\": \"mtn\",\n  \"externalId\": \"fp-remit-{{$timestamp}}\"\n}" },
+            "url": { "raw": "{{FLOWPAY_BASE_URL}}/remittance/cash-transfer", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["remittance", "cash-transfer"] },
+            "description": "FlowPay: POST /remittance/cash-transfer\nMTN: POST /remittance/v2_0/cashtransfer"
+          }
+        },
+        {
+          "name": "Get Cash Transfer Status",
+          "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{FLOWPAY_JWT_TOKEN}}" }], "url": { "raw": "{{FLOWPAY_BASE_URL}}/remittance/cash-transfer/{{CASH_TRANSFER_ID}}", "host": ["{{FLOWPAY_BASE_URL}}"], "path": ["remittance", "cash-transfer", "{{CASH_TRANSFER_ID}}"] } }
+        }
+      ]
+    }
+  ]
+}

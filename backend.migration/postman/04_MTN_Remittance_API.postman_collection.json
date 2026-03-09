@@ -1,0 +1,200 @@
+{
+  "info": {
+    "_postman_id": "fp-mtn-remittance-api-004",
+    "name": "04 - MTN Remittance API (Direct)",
+    "description": "Direct MTN MoMo Remittance API endpoints.\n\nThese are the raw MTN API calls FlowPay uses for:\n- Cross-border remittance transfers\n- Cash transfers with payer identity details\n\nRequires: Run '01 - MTN Sandbox Setup' first.\n\nBase URL: https://sandbox.momodeveloper.mtn.com/remittance",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Account Balance",
+      "item": [
+        {
+          "name": "Get Account Balance",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "console.log('Remittance Balance:', data.availableBalance, data.currency);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/account/balance", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "account", "balance"] }
+          }
+        },
+        {
+          "name": "Get Balance by Currency",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/account/balance/{{TEST_CURRENCY}}", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "account", "balance", "{{TEST_CURRENCY}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Account Holder",
+      "item": [
+        {
+          "name": "Validate Account Holder",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/accountholder/msisdn/{{TEST_MSISDN}}/active", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "accountholder", "msisdn", "{{TEST_MSISDN}}", "active"] }
+          }
+        },
+        {
+          "name": "Get Basic User Info",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/accountholder/msisdn/{{TEST_MSISDN}}/basicuserinfo", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "accountholder", "msisdn", "{{TEST_MSISDN}}", "basicuserinfo"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Remittance Transfer",
+      "item": [
+        {
+          "name": "Create Transfer",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('CASH_TRANSFER_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{CASH_TRANSFER_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"externalId\": \"remittance-{{$timestamp}}\",\n  \"payee\": {\n    \"partyIdType\": \"MSISDN\",\n    \"partyId\": \"{{TEST_MSISDN}}\"\n  },\n  \"payerMessage\": \"FlowPay remittance transfer\",\n  \"payeeNote\": \"Remittance from FlowPay\"\n}" },
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/transfer", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "transfer"] },
+            "description": "Remittance transfer to recipient.\n\nMTN API: POST /remittance/v1_0/transfer\nFlowPay equivalent: POST /api/v1/remittance/cash-transfer"
+          }
+        },
+        {
+          "name": "Get Transfer Status",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "console.log('Remittance Transfer Status:', data.status);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/transfer/{{CASH_TRANSFER_ID}}", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "transfer", "{{CASH_TRANSFER_ID}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Cash Transfer (V2 International)",
+      "item": [
+        {
+          "name": "Create Cash Transfer",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('CASH_TRANSFER_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{CASH_TRANSFER_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"payee\": {\n    \"partyIdType\": \"MSISDN\",\n    \"partyId\": \"{{TEST_MSISDN}}\"\n  },\n  \"externalId\": \"cashtransfer-{{$timestamp}}\",\n  \"orginatingCountry\": \"FRA\",\n  \"originalAmount\": \"{{TEST_AMOUNT}}\",\n  \"originalCurrency\": \"{{TEST_CURRENCY}}\",\n  \"payerMessage\": \"International remittance\",\n  \"payeeNote\": \"Cash transfer from abroad\",\n  \"payerIdentificationType\": \"PASS\",\n  \"payerIdentificationNumber\": \"AB1234567\",\n  \"payerFirstName\": \"John\",\n  \"payerSurName\": \"Doe\",\n  \"payerLanguageCode\": \"eng\",\n  \"payerEmail\": \"john@example.com\",\n  \"payerMsisdn\": \"46733123450\",\n  \"payerGender\": \"MALE\"\n}" },
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v2_0/cashtransfer", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v2_0", "cashtransfer"] },
+            "description": "International cash transfer with full payer identity.\n\nMTN API: POST /remittance/v2_0/cashtransfer\nFlowPay equivalent: POST /api/v1/remittance/cash-transfer"
+          }
+        },
+        {
+          "name": "Get Cash Transfer Status",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "console.log('Cash Transfer:', JSON.stringify(pm.response.json(), null, 2));"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v2_0/cashtransfer/{{CASH_TRANSFER_ID}}", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v2_0", "cashtransfer", "{{CASH_TRANSFER_ID}}"] }
+          }
+        }
+      ],
+      "description": "V2 Cash Transfer with international remittance support and payer identity details."
+    },
+    {
+      "name": "5. OAuth2 / Consent",
+      "item": [
+        {
+          "name": "BC Authorize",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "if (data.auth_req_id) pm.environment.set('MTN_AUTH_REQ_ID', data.auth_req_id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_REMITTANCE_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "login_hint", "value": "ID:{{TEST_MSISDN}}/MSISDN" }, { "key": "scope", "value": "profile" }, { "key": "access_type", "value": "offline" }] },
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/v1_0/bc-authorize", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["v1_0", "bc-authorize"] }
+          }
+        },
+        {
+          "name": "Create OAuth2 Token",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "if (data.access_token) pm.environment.set('MTN_OAUTH2_TOKEN', data.access_token);", "if (data.refresh_token) pm.environment.set('MTN_REFRESH_TOKEN', data.refresh_token);"], "type": "text/javascript" } }],
+          "request": {
+            "auth": { "type": "basic", "basic": [{ "key": "username", "value": "{{MTN_REMITTANCE_API_USER}}", "type": "string" }, { "key": "password", "value": "{{MTN_REMITTANCE_API_KEY}}", "type": "string" }] },
+            "method": "POST",
+            "header": [
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "grant_type", "value": "urn:openid:params:grant-type:ciba" }, { "key": "auth_req_id", "value": "{{MTN_AUTH_REQ_ID}}" }] },
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/oauth2/token/", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["oauth2", "token", ""] }
+          }
+        },
+        {
+          "name": "Get User Info with Consent",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_OAUTH2_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_REMITTANCE_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_REMITTANCE_URL}}/oauth2/v1_0/userinfo", "host": ["{{MTN_REMITTANCE_URL}}"], "path": ["oauth2", "v1_0", "userinfo"] }
+          }
+        }
+      ]
+    }
+  ]
+}

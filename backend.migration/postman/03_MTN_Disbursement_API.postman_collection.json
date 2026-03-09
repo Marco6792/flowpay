@@ -1,0 +1,287 @@
+{
+  "info": {
+    "_postman_id": "fp-mtn-disbursement-api-003",
+    "name": "03 - MTN Disbursement API (Direct)",
+    "description": "Direct MTN MoMo Disbursement API endpoints.\n\nThese are the raw MTN API calls FlowPay uses for:\n- Transfers (send money to recipients)\n- Deposits (deposit to accounts)\n- Refunds (refund previous collections)\n\nRequires: Run '01 - MTN Sandbox Setup' first.\n\nBase URL: https://sandbox.momodeveloper.mtn.com/disbursement",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Account Balance",
+      "item": [
+        {
+          "name": "Get Account Balance",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "console.log('Disbursement Balance:', data.availableBalance, data.currency);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/account/balance", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "account", "balance"] },
+            "description": "MTN API: GET /disbursement/v1_0/account/balance\nFlowPay equivalent: GET /api/v1/balance/provider/mtn"
+          }
+        },
+        {
+          "name": "Get Balance by Currency",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/account/balance/{{TEST_CURRENCY}}", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "account", "balance", "{{TEST_CURRENCY}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Account Holder",
+      "item": [
+        {
+          "name": "Validate Account Holder",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/accountholder/msisdn/{{TEST_MSISDN}}/active", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "accountholder", "msisdn", "{{TEST_MSISDN}}", "active"] }
+          }
+        },
+        {
+          "name": "Get Basic User Info",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/accountholder/MSISDN/{{TEST_MSISDN}}/basicuserinfo", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "accountholder", "MSISDN", "{{TEST_MSISDN}}", "basicuserinfo"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Transfer (Send Money)",
+      "item": [
+        {
+          "name": "Create Transfer",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('TRANSFER_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{TRANSFER_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"externalId\": \"disbursement-{{$timestamp}}\",\n  \"payee\": {\n    \"partyIdType\": \"MSISDN\",\n    \"partyId\": \"{{TEST_MSISDN}}\"\n  },\n  \"payerMessage\": \"FlowPay disbursement transfer\",\n  \"payeeNote\": \"Payment from FlowPay\"\n}" },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/transfer", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "transfer"] },
+            "description": "Transfer money to a recipient.\n\nMTN API: POST /disbursement/v1_0/transfer\nFlowPay equivalent: POST /api/v1/transfers"
+          }
+        },
+        {
+          "name": "Get Transfer Status",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "console.log('Transfer Status:', data.status);", "if (data.financialTransactionId) console.log('FinancialTxId:', data.financialTransactionId);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/transfer/{{TRANSFER_ID}}", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "transfer", "{{TRANSFER_ID}}"] },
+            "description": "MTN API: GET /disbursement/v1_0/transfer/{referenceId}\nFlowPay equivalent: GET /api/v1/transfers/{id}/status"
+          }
+        }
+      ],
+      "description": "Disbursement transfers - send money to recipients.\nFlowPay maps this to POST /api/v1/transfers"
+    },
+    {
+      "name": "4. Deposit",
+      "item": [
+        {
+          "name": "Create Deposit V1",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('DEPOSIT_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{DEPOSIT_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"externalId\": \"deposit-{{$timestamp}}\",\n  \"payee\": {\n    \"partyIdType\": \"MSISDN\",\n    \"partyId\": \"{{TEST_MSISDN}}\"\n  },\n  \"payerMessage\": \"FlowPay deposit\",\n  \"payeeNote\": \"Deposit from FlowPay\"\n}" },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/deposit", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "deposit"] },
+            "description": "Deposit funds to a recipient's account.\n\nMTN API: POST /disbursement/v1_0/deposit\nFlowPay equivalent: POST /api/v1/deposits"
+          }
+        },
+        {
+          "name": "Create Deposit V2",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('DEPOSIT_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{DEPOSIT_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"externalId\": \"deposit-v2-{{$timestamp}}\",\n  \"payee\": {\n    \"partyIdType\": \"MSISDN\",\n    \"partyId\": \"{{TEST_MSISDN}}\"\n  },\n  \"payerMessage\": \"FlowPay deposit V2\",\n  \"payeeNote\": \"Deposit V2 from FlowPay\"\n}" },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v2_0/deposit", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v2_0", "deposit"] },
+            "description": "MTN API: POST /disbursement/v2_0/deposit\nFlowPay equivalent: POST /api/v1/deposits/v2"
+          }
+        },
+        {
+          "name": "Get Deposit Status",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "console.log('Deposit Status:', data.status);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/deposit/{{DEPOSIT_ID}}", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "deposit", "{{DEPOSIT_ID}}"] },
+            "description": "MTN API: GET /disbursement/v1_0/deposit/{referenceId}\nFlowPay equivalent: GET /api/v1/deposits/{id}/status"
+          }
+        }
+      ],
+      "description": "Deposit funds to recipient accounts.\nFlowPay maps this to POST /api/v1/deposits"
+    },
+    {
+      "name": "5. Refund",
+      "item": [
+        {
+          "name": "Create Refund V1",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('REFUND_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{REFUND_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"externalId\": \"refund-{{$timestamp}}\",\n  \"payerMessage\": \"FlowPay refund\",\n  \"payeeNote\": \"Refund from FlowPay\",\n  \"referenceIdToRefund\": \"{{PAYMENT_ID}}\"\n}" },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/refund", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "refund"] },
+            "description": "Refund a previous collection transaction.\n\nMTN API: POST /disbursement/v1_0/refund\nFlowPay equivalent: POST /api/v1/payments/{id}/refund\n\nNote: referenceIdToRefund must be a valid Request-to-Pay reference ID."
+          }
+        },
+        {
+          "name": "Create Refund V2",
+          "event": [
+            { "listen": "prerequest", "script": { "exec": ["var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) { var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8); return v.toString(16); });", "pm.environment.set('REFUND_ID', uuid);"], "type": "text/javascript" } },
+            { "listen": "test", "script": { "exec": ["pm.test('Status 202 Accepted', function () { pm.response.to.have.status(202); });"], "type": "text/javascript" } }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Reference-Id", "value": "{{REFUND_ID}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": \"{{TEST_AMOUNT}}\",\n  \"currency\": \"{{TEST_CURRENCY}}\",\n  \"externalId\": \"refund-v2-{{$timestamp}}\",\n  \"payerMessage\": \"FlowPay refund V2\",\n  \"payeeNote\": \"Refund V2 from FlowPay\",\n  \"referenceIdToRefund\": \"{{PAYMENT_ID}}\"\n}" },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v2_0/refund", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v2_0", "refund"] },
+            "description": "MTN API: POST /disbursement/v2_0/refund\nFlowPay equivalent: POST /api/v1/payments/{id}/refund/v2"
+          }
+        },
+        {
+          "name": "Get Refund Status",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "console.log('Refund Status:', data.status);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/refund/{{REFUND_ID}}", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "refund", "{{REFUND_ID}}"] },
+            "description": "MTN API: GET /disbursement/v1_0/refund/{referenceId}\nFlowPay equivalent: GET /api/v1/payments/{id}/refund/status"
+          }
+        }
+      ],
+      "description": "Refund previous collection transactions.\nFlowPay maps this to POST /api/v1/payments/{id}/refund"
+    },
+    {
+      "name": "6. OAuth2 / Consent",
+      "item": [
+        {
+          "name": "BC Authorize",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "if (data.auth_req_id) pm.environment.set('MTN_AUTH_REQ_ID', data.auth_req_id);"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_DISBURSEMENT_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "X-Callback-Url", "value": "{{MTN_CALLBACK_URL}}" },
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "login_hint", "value": "ID:{{TEST_MSISDN}}/MSISDN" }, { "key": "scope", "value": "profile" }, { "key": "access_type", "value": "offline" }] },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/v1_0/bc-authorize", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["v1_0", "bc-authorize"] }
+          }
+        },
+        {
+          "name": "Create OAuth2 Token",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });", "var data = pm.response.json();", "if (data.access_token) pm.environment.set('MTN_OAUTH2_TOKEN', data.access_token);", "if (data.refresh_token) pm.environment.set('MTN_REFRESH_TOKEN', data.refresh_token);"], "type": "text/javascript" } }],
+          "request": {
+            "auth": { "type": "basic", "basic": [{ "key": "username", "value": "{{MTN_DISBURSEMENT_API_USER}}", "type": "string" }, { "key": "password", "value": "{{MTN_DISBURSEMENT_API_KEY}}", "type": "string" }] },
+            "method": "POST",
+            "header": [
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Content-Type", "value": "application/x-www-form-urlencoded" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "body": { "mode": "urlencoded", "urlencoded": [{ "key": "grant_type", "value": "urn:openid:params:grant-type:ciba" }, { "key": "auth_req_id", "value": "{{MTN_AUTH_REQ_ID}}" }] },
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/oauth2/token/", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["oauth2", "token", ""] }
+          }
+        },
+        {
+          "name": "Get User Info with Consent",
+          "event": [{ "listen": "test", "script": { "exec": ["pm.test('Status 200', function () { pm.response.to.have.status(200); });"], "type": "text/javascript" } }],
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{MTN_OAUTH2_TOKEN}}" },
+              { "key": "X-Target-Environment", "value": "{{MTN_TARGET_ENVIRONMENT}}" },
+              { "key": "Ocp-Apim-Subscription-Key", "value": "{{MTN_DISBURSEMENT_SUBSCRIPTION_KEY}}" }
+            ],
+            "url": { "raw": "{{MTN_DISBURSEMENT_URL}}/oauth2/v1_0/userinfo", "host": ["{{MTN_DISBURSEMENT_URL}}"], "path": ["oauth2", "v1_0", "userinfo"] }
+          }
+        }
+      ]
+    }
+  ]
+}
