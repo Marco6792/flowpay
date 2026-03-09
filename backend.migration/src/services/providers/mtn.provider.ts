@@ -5038,4 +5038,140 @@ export class MTNMobileMoneyProvider implements PaymentProvider {
       throw error;
     }
   }
+
+  // ─── Sandbox Provisioning API ───────────────────────────────────────────────
+  // These endpoints are only available in the sandbox environment and require
+  // a dedicated sandbox provisioning subscription key.
+
+  /**
+   * Create a new API user in the MTN sandbox environment.
+   * The caller must supply a UUID that will become the new API user's reference ID.
+   * POST /v1_0/apiuser
+   */
+  async createSandboxApiUser(
+    referenceId: string,
+    providerCallbackHost: string
+  ): Promise<{ success: boolean; message?: string }> {
+    if (this.targetEnvironment !== 'sandbox') {
+      throw new Error('Sandbox provisioning is only available in the sandbox environment');
+    }
+
+    const provisioningKey = env.MTN_SANDBOX_PROVISIONING_KEY;
+    if (!provisioningKey) {
+      throw new Error('MTN_SANDBOX_PROVISIONING_KEY is required for sandbox provisioning');
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/v1_0/apiuser`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Reference-Id': referenceId,
+          'Ocp-Apim-Subscription-Key': provisioningKey,
+        },
+        body: JSON.stringify({ providerCallbackHost }),
+      });
+
+      if (response.status === 201) {
+        logger.info({ referenceId }, 'MTN sandbox API user created successfully');
+        return { success: true };
+      }
+
+      const errorText = await response.text();
+      logger.error({ referenceId, status: response.status, error: errorText }, 'Failed to create MTN sandbox API user');
+      return {
+        success: false,
+        message: errorText || `Failed with status ${response.status}`,
+      };
+    } catch (error: any) {
+      logger.error({ error, referenceId }, 'Error creating MTN sandbox API user');
+      throw error;
+    }
+  }
+
+  /**
+   * Generate an API key for an existing sandbox API user.
+   * POST /v1_0/apiuser/{X-Reference-Id}/apikey
+   */
+  async createSandboxApiKey(
+    referenceId: string
+  ): Promise<{ success: true; apiKey: string } | { success: false; message: string; notFound?: boolean }> {
+    if (this.targetEnvironment !== 'sandbox') {
+      throw new Error('Sandbox provisioning is only available in the sandbox environment');
+    }
+
+    const provisioningKey = env.MTN_SANDBOX_PROVISIONING_KEY;
+    if (!provisioningKey) {
+      throw new Error('MTN_SANDBOX_PROVISIONING_KEY is required for sandbox provisioning');
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/v1_0/apiuser/${referenceId}/apikey`, {
+        method: 'POST',
+        headers: {
+          'Ocp-Apim-Subscription-Key': provisioningKey,
+        },
+      });
+
+      if (response.status === 201) {
+        const data = await response.json() as { apiKey: string };
+        logger.info({ referenceId }, 'MTN sandbox API key created successfully');
+        return { success: true, apiKey: data.apiKey };
+      }
+
+      const errorText = await response.text();
+      logger.error({ referenceId, status: response.status, error: errorText }, 'Failed to create MTN sandbox API key');
+      return {
+        success: false,
+        message: errorText || `Failed with status ${response.status}`,
+        notFound: response.status === 404,
+      };
+    } catch (error: any) {
+      logger.error({ error, referenceId }, 'Error creating MTN sandbox API key');
+      throw error;
+    }
+  }
+
+  /**
+   * Get details of a sandbox API user.
+   * GET /v1_0/apiuser/{X-Reference-Id}
+   */
+  async getSandboxApiUser(referenceId: string): Promise<{
+    providerCallbackHost: string;
+    targetEnvironment: string;
+  } | null> {
+    if (this.targetEnvironment !== 'sandbox') {
+      throw new Error('Sandbox provisioning is only available in the sandbox environment');
+    }
+
+    const provisioningKey = env.MTN_SANDBOX_PROVISIONING_KEY;
+    if (!provisioningKey) {
+      throw new Error('MTN_SANDBOX_PROVISIONING_KEY is required for sandbox provisioning');
+    }
+
+    try {
+      const response = await fetch(`${this.baseUrl}/v1_0/apiuser/${referenceId}`, {
+        method: 'GET',
+        headers: {
+          'Ocp-Apim-Subscription-Key': provisioningKey,
+        },
+      });
+
+      if (response.status === 200) {
+        const data = await response.json() as { providerCallbackHost: string; targetEnvironment: string };
+        return data;
+      }
+
+      if (response.status === 404) {
+        return null;
+      }
+
+      const errorText = await response.text();
+      logger.error({ referenceId, status: response.status, error: errorText }, 'Failed to get MTN sandbox API user');
+      throw new Error(`Failed to get API user: ${response.status}`);
+    } catch (error: any) {
+      logger.error({ error, referenceId }, 'Error getting MTN sandbox API user');
+      throw error;
+    }
+  }
 }
