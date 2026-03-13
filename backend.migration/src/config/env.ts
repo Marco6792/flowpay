@@ -26,6 +26,7 @@ const envSchema = z.object({
   MTN_DISBURSEMENT_SUBSCRIPTION_KEY: z.string().optional(),
   MTN_REMITTANCE_SUBSCRIPTION_KEY: z.string().optional(),
   MTN_SUBSCRIPTION_KEY: z.string().optional(), // Legacy - kept for backward compatibility
+  MTN_SANDBOX_PROVISIONING_KEY: z.string().optional(), // Sandbox provisioning subscription key
   
   // MTN Callback Configuration
   MTN_CALLBACK_URL: z.string().url().optional(),
