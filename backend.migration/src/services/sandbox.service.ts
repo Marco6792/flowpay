@@ -1,6 +1,7 @@
 import { randomUUID } from 'crypto';
 import { MTNMobileMoneyProvider } from './providers/mtn.provider';
 import { logger } from '../utils/logger';
+import { env } from '../config/env';
 
 export interface CreateApiUserResult {
   success: boolean;
@@ -30,12 +31,19 @@ export interface GetApiUserResult {
  * Implements the MTN Sandbox Provisioning API, which allows developers to create
  * API users and API keys in the sandbox environment without using the MTN portal.
  *
+ * This service is only available when MTN_TARGET_ENVIRONMENT is set to 'sandbox'.
+ *
  * Reference: sandbox-provisioning-api.json (OpenAPI 3.0.1)
  */
 export class SandboxService {
   private provider: MTNMobileMoneyProvider;
 
   constructor() {
+    if (env.MTN_TARGET_ENVIRONMENT !== 'sandbox') {
+      throw new Error(
+        'Sandbox provisioning is only available when MTN_TARGET_ENVIRONMENT is set to sandbox'
+      );
+    }
     this.provider = new MTNMobileMoneyProvider('sandbox');
   }
 

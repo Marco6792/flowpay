@@ -22,8 +22,20 @@ export const config: ApiRouteConfig = {
 
 export const handler = async (req: any, { logger }: FlowContext<any>) => {
   try {
+    let sandboxService: SandboxService
+    try {
+      sandboxService = new SandboxService()
+    } catch {
+      return {
+        status: 403,
+        body: {
+          success: false,
+          error: 'Sandbox provisioning is not available in production mode',
+        },
+      }
+    }
+
     const { providerCallbackHost, referenceId } = req.body as z.infer<typeof bodySchema>
-    const sandboxService = new SandboxService()
 
     const result = await sandboxService.createApiUser(providerCallbackHost, referenceId)
 
