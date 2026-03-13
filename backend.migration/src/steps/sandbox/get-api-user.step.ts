@@ -20,6 +20,19 @@ export const config: ApiRouteConfig = {
 
 export const handler = async (req: any, { logger }: FlowContext<any>) => {
   try {
+    let sandboxService: SandboxService
+    try {
+      sandboxService = new SandboxService()
+    } catch {
+      return {
+        status: 403,
+        body: {
+          success: false,
+          error: 'Sandbox provisioning is not available in production mode',
+        },
+      }
+    }
+
     const parseResult = paramsSchema.safeParse(req.params)
     if (!parseResult.success) {
       return {
@@ -32,7 +45,6 @@ export const handler = async (req: any, { logger }: FlowContext<any>) => {
     }
 
     const { referenceId } = parseResult.data
-    const sandboxService = new SandboxService()
 
     const result = await sandboxService.getApiUser(referenceId)
 
