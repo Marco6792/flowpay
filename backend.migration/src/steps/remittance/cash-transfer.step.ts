@@ -31,12 +31,22 @@ export const config: ApiRouteConfig = {
   description: 'Create a cash transfer for remittance (MTN Remittance v2)',
 }
 
-export const handler = async (req: any, { logger, emit }: FlowContext) => {
+export const handler = async (req: any, { logger, emit }: FlowContext<any>) => {
   try {
     const transferData = req.body as z.infer<typeof bodySchema>
     const provider = ProviderFactory.getProvider((transferData.provider || 'MTN').toLowerCase() as ProviderType)
+    if (!provider) {
+      return {
+        status: 400,
+        body: { success: false, error: 'Provider not found' },
+      }
+    }
 
-    const result = await provider.cashTransfer(transferData)
+    const { provider: _providerField, ...cashTransferParams } = transferData
+    const result = await provider.cashTransfer({
+      ...cashTransferParams,
+      currency: transferData.currency || 'XAF',
+    })
 
     if (result.success) {
       await emit({

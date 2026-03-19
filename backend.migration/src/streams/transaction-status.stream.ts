@@ -10,6 +10,7 @@ export const transactionStatusSchema = z.object({
   amount: z.number().optional(),
   currency: z.string().optional(),
   provider: z.string().optional(),
+  mode: z.string().optional(),
   updatedAt: z.string(),
 })
 

@@ -1,4 +1,5 @@
 import { logger } from '../utils/logger';
+import { prisma } from '../utils/database';
 import { ProviderFactory, ProviderMode } from './providers/provider.factory';
 import { BCAuthorizeRequest, OAuth2TokenRequest } from './providers/provider.interface';
 
@@ -99,7 +100,22 @@ export class ConsentService {
 
       if (result.success) {
         // Store consent request in database for tracking
-        // TODO: Implement consent storage once database migration is applied
+        try {
+          await prisma.consentRequest.create({
+            data: {
+              authReqId: result.authReqId!,
+              customerId: data.customerId,
+              businessId: data.businessId,
+              scope: data.scope,
+              accessType: data.accessType,
+              provider: data.provider || 'MTN',
+              status: 'PENDING',
+              metadata: data.metadata ?? undefined,
+            },
+          });
+        } catch (dbError: any) {
+          logger.warn({ error: dbError.message, authReqId: result.authReqId }, 'Failed to store consent request in database');
+        }
 
         logger.info({
           authReqId: result.authReqId,
@@ -158,7 +174,22 @@ export class ConsentService {
       const result = await provider.createOAuth2Token(tokenRequest);
 
       if (result.success) {
-        // TODO: Store token in database for future use
+        // Store token in database for future use
+        try {
+          await prisma.consentRequest.updateMany({
+            where: { authReqId: data.authReqId },
+            data: {
+              status: 'APPROVED',
+              accessToken: result.accessToken,
+              tokenType: result.tokenType,
+              expiresIn: result.expiresIn,
+              refreshToken: result.refreshToken,
+              refreshExpiresIn: result.refreshExpiresIn,
+            },
+          });
+        } catch (dbError: any) {
+          logger.warn({ error: dbError.message, authReqId: data.authReqId }, 'Failed to store consent token in database');
+        }
 
         logger.info({
           authReqId: data.authReqId,
@@ -297,7 +328,20 @@ export class ConsentService {
       if (result.success) {
         logger.info('OAuth2 consent revoked successfully');
 
-        // TODO: Clean up any stored consent data in database
+        // Clean up stored consent data in database
+        try {
+          await prisma.consentRequest.updateMany({
+            where: { accessToken: data.accessToken },
+            data: {
+              status: 'REVOKED',
+              revokedAt: new Date(),
+              accessToken: null,
+              refreshToken: null,
+            },
+          });
+        } catch (dbError: any) {
+          logger.warn({ error: dbError.message }, 'Failed to update consent revocation in database');
+        }
 
         return result;
       } else {

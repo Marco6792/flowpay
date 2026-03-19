@@ -83,13 +83,13 @@ export const handler = async (req: any, { emit, logger }: FlowContext<any>) => {
     })
 
     logger.info(
+      'New admin user created',
       {
         adminId: newAdmin.id,
         email: newAdmin.email,
         role: newAdmin.role,
         createdBy: currentUser.userId,
-      },
-      'New admin user created'
+      }
     )
 
     await emit({

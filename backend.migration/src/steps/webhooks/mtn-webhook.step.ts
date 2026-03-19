@@ -202,7 +202,7 @@ export const handler = async (req: any, { emit, logger }: FlowContext<any>) => {
 
       await emit({
         topic: 'payment.updated',
-        data: { paymentId: payment.id, status: newStatus },
+        data: { paymentId: payment!.id, status: newStatus },
       })
     }
 

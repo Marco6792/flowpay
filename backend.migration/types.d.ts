@@ -8,7 +8,7 @@ import { EventHandler, ApiRouteHandler, ApiResponse, MotiaStream, CronHandler } 
 
 declare module 'motia' {
   interface FlowContextStateStreams {
-    'transactionStatus': MotiaStream<{ id: string; transactionId: string; type: 'payment' | 'transfer' | 'deposit' | 'withdrawal'; status: string; previousStatus?: string; amount?: number; currency?: string; provider?: string; updatedAt: string }>
+    'transactionStatus': MotiaStream<{ id: string; transactionId: string; type: 'payment' | 'transfer' | 'deposit' | 'withdrawal'; status: string; previousStatus?: string; amount?: number; currency?: string; provider?: string; mode?: string; updatedAt: string }>
   }
 
   interface Handlers {
