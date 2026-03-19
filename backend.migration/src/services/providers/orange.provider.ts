@@ -494,4 +494,67 @@ export class OrangeMoneyProvider implements PaymentProvider {
   async checkWithdrawStatus(_withdrawId: string): Promise<import('./provider.interface.ts').WithdrawStatus> {
     throw new Error('Check withdraw status not implemented for Orange Money provider');
   }
+
+  async createInvoice(params: import('./provider.interface.ts').InvoiceRequest): Promise<import('./provider.interface.ts').InvoiceResponse> {
+    logger.warn('createInvoice not supported by Orange Money provider');
+    return {
+      success: false,
+      invoiceId: '',
+      referenceId: '',
+      status: 'FAILED',
+      message: 'Invoice creation not supported for Orange Money provider',
+      externalId: params.externalId,
+    };
+  }
+
+  async getInvoiceStatus(_referenceId: string): Promise<import('./provider.interface.ts').InvoiceStatus> {
+    throw new Error('getInvoiceStatus not supported by Orange Money provider');
+  }
+
+  async cancelInvoice(_referenceId: string): Promise<{ success: boolean; message?: string }> {
+    return {
+      success: false,
+      message: 'Invoice cancellation not supported for Orange Money provider',
+    };
+  }
+
+  async cashTransfer(params: import('./provider.interface.ts').CashTransferRequest): Promise<import('./provider.interface.ts').CashTransferResponse> {
+    logger.warn('cashTransfer not supported by Orange Money provider');
+    return {
+      success: false,
+      transferId: params.transferId || '',
+      referenceId: '',
+      status: 'FAILED',
+      message: 'Cash transfer not supported for Orange Money provider',
+    };
+  }
+
+  async getCashTransferStatus(_referenceId: string): Promise<import('./provider.interface.ts').CashTransferStatus> {
+    throw new Error('getCashTransferStatus not supported by Orange Money provider');
+  }
+
+  async getApprovedPreApprovals(_accountHolderIdType: string, _accountHolderId: string): Promise<import('./provider.interface.ts').ApprovedPreApproval[]> {
+    logger.warn('getApprovedPreApprovals not supported by Orange Money provider');
+    return [];
+  }
+
+  async getBalanceByCurrency(_currency: string): Promise<import('./provider.interface.ts').BalanceByCurrencyResponse> {
+    throw new Error('getBalanceByCurrency not supported by Orange Money provider');
+  }
+
+  async checkStatusV2(transactionId: string): Promise<import('./provider.interface.ts').PaymentStatus> {
+    return this.checkStatus(transactionId);
+  }
+
+  async requestWithdrawV2(params: import('./provider.interface.ts').WithdrawRequest): Promise<import('./provider.interface.ts').WithdrawResponse> {
+    return this.requestWithdraw(params);
+  }
+
+  async depositV2(params: DepositRequest): Promise<DepositResponse> {
+    return this.deposit(params);
+  }
+
+  async refundV2(transactionId: string, amount?: number): Promise<RefundResponse> {
+    return this.refund(transactionId, amount);
+  }
 }

@@ -29,6 +29,12 @@ export const handler = async (req: any, { logger }: FlowContext) => {
     const { provider = 'MTN' } = req.query as z.infer<typeof querySchema>
 
     const providerInstance = ProviderFactory.getProvider(provider.toLowerCase() as ProviderType)
+    if (!providerInstance) {
+      return {
+        status: 400,
+        body: { success: false, error: 'Provider not found' },
+      }
+    }
     const balance = await providerInstance.getBalanceByCurrency(currency)
 
     return {

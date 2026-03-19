@@ -39,12 +39,12 @@ export const handler = async (req: any, { logger }: FlowContext) => {
     const feeStructure = await FeeService.updateFeeStructure(id, validatedData)
 
     logger.info(
+      'Fee structure updated',
       {
         feeStructureId: id,
         updates: validatedData,
         adminId: req.user?.userId,
-      },
-      'Fee structure updated'
+      }
     )
 
     return {
@@ -61,7 +61,7 @@ export const handler = async (req: any, { logger }: FlowContext) => {
         body: {
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
       }
     }

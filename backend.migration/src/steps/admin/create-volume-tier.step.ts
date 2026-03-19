@@ -50,7 +50,7 @@ export const handler = async (req: any, { logger }: FlowContext) => {
         body: {
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
       }
     }

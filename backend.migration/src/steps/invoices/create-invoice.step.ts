@@ -36,12 +36,22 @@ export const config: ApiRouteConfig = {
   description: 'Create an invoice for deferred payment (MTN Collection v2)',
 }
 
-export const handler = async (req: any, { logger, emit }: FlowContext) => {
+export const handler = async (req: any, { logger, emit }: FlowContext<any>) => {
   try {
     const invoiceData = req.body as z.infer<typeof bodySchema>
     const provider = ProviderFactory.getProvider((invoiceData.provider || 'MTN').toLowerCase() as ProviderType)
+    if (!provider) {
+      return {
+        status: 400,
+        body: { success: false, error: 'Provider not found' },
+      }
+    }
 
-    const result = await provider.createInvoice(invoiceData)
+    const { provider: _providerField, ...invoiceParams } = invoiceData
+    const result = await provider.createInvoice({
+      ...invoiceParams,
+      currency: invoiceData.currency || 'XAF',
+    })
 
     if (result.success) {
       await emit({

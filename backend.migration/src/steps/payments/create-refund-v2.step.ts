@@ -23,7 +23,7 @@ export const config: ApiRouteConfig = {
   description: 'Create a refund using MTN Disbursement v2.0 API',
 }
 
-export const handler = async (req: any, { logger, emit }: FlowContext) => {
+export const handler = async (req: any, { logger, emit }: FlowContext<any>) => {
   try {
     const data = req.body as z.infer<typeof bodySchema>
     const providerName = (data.provider || 'MTN').toLowerCase() as ProviderType

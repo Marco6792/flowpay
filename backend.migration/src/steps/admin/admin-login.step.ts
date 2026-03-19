@@ -55,12 +55,12 @@ export const handler = async (req: any, { emit, logger }: FlowContext<any>) => {
     // Check if user is admin
     if (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN') {
       logger.warn(
+        'Non-admin user attempted admin login',
         {
           userId: user.id,
           email: user.email,
           role: user.role,
-        },
-        'Non-admin user attempted admin login'
+        }
       )
 
       return {
@@ -116,12 +116,12 @@ export const handler = async (req: any, { emit, logger }: FlowContext<any>) => {
     })
 
     logger.info(
+      'Admin login successful',
       {
         userId: user.id,
         email: user.email,
         role: user.role,
-      },
-      'Admin login successful'
+      }
     )
 
     await emit({
@@ -151,7 +151,7 @@ export const handler = async (req: any, { emit, logger }: FlowContext<any>) => {
         body: {
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
       }
     }

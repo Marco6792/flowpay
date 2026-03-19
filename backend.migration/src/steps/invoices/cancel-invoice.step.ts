@@ -23,12 +23,18 @@ export const config: ApiRouteConfig = {
   description: 'Cancel an invoice',
 }
 
-export const handler = async (req: any, { logger, emit }: FlowContext) => {
+export const handler = async (req: any, { logger, emit }: FlowContext<any>) => {
   try {
     const { referenceId } = req.params as z.infer<typeof paramsSchema>
     const { provider = 'MTN' } = req.body as z.infer<typeof bodySchema>
 
     const providerInstance = ProviderFactory.getProvider(provider.toLowerCase() as ProviderType)
+    if (!providerInstance) {
+      return {
+        status: 400,
+        body: { success: false, error: 'Provider not found' },
+      }
+    }
     const result = await providerInstance.cancelInvoice(referenceId)
 
     if (result.success) {

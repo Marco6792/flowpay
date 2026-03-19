@@ -35,12 +35,12 @@ export const handler = async (req: any, { logger }: FlowContext) => {
     })
 
     logger.info(
+      'Merchant fee assigned',
       {
         userId: validatedData.userId,
         feeStructureId: validatedData.feeStructureId,
         adminId: req.user?.userId,
-      },
-      'Merchant fee assigned'
+      }
     )
 
     return {
@@ -57,7 +57,7 @@ export const handler = async (req: any, { logger }: FlowContext) => {
         body: {
           success: false,
           error: 'Validation error',
-          details: error.errors,
+          details: error.issues,
         },
       }
     }

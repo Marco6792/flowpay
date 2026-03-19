@@ -12,7 +12,7 @@ export const config: ApiRouteConfig = {
   description: 'Generic provider webhook receiver that routes to specific provider handlers',
 }
 
-export const handler = async (req: any, { logger, emit }: FlowContext) => {
+export const handler = async (req: any, { logger, emit }: FlowContext<any>) => {
   const { provider } = req.params as { provider: string }
   const body = req.body
 

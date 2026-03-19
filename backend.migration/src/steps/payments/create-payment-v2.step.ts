@@ -35,11 +35,17 @@ export const config: ApiRouteConfig = {
   description: 'Create a payment using MTN Collection v2.0 API',
 }
 
-export const handler = async (req: any, { logger, emit }: FlowContext) => {
+export const handler = async (req: any, { logger, emit }: FlowContext<any>) => {
   try {
     const data = req.body as z.infer<typeof bodySchema>
     const providerName = (data.provider || 'MTN').toLowerCase() as ProviderType
     const provider = ProviderFactory.getProvider(providerName)
+    if (!provider) {
+      return {
+        status: 400,
+        body: { success: false, error: 'Provider not found' },
+      }
+    }
 
     const transactionId = crypto.randomUUID()
 

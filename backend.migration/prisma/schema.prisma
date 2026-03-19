@@ -730,3 +730,30 @@ enum ApiKeyMode {
   SANDBOX
   LIVE
 }
+
+model ConsentRequest {
+  id              String    @id @default(cuid())
+  authReqId       String    @unique
+  customerId      String
+  businessId      String
+  scope           String
+  accessType      String
+  provider        String    @default("MTN")
+  status          String    @default("PENDING")
+  accessToken     String?
+  tokenType       String?
+  expiresIn       Int?
+  refreshToken    String?
+  refreshExpiresIn Int?
+  revokedAt       DateTime?
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([authReqId])
+  @@index([customerId])
+  @@index([businessId])
+  @@index([status])
+  @@index([provider])
+  @@map("consent_requests")
+}
